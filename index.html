@@ -77,7 +77,7 @@ header.mast{border-bottom:3px solid var(--ink)}
 .chip[aria-pressed="true"] small{color:inherit;opacity:.75}
 
 /* Main grid */
-main .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;padding-block:20px 48px}
+main .wrap{padding-block:20px 48px}
 .feed{min-width:0}
 .day{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:18px 0 6px;border-bottom:1px solid var(--ink)}
 .day:first-child{padding-top:0}
@@ -98,14 +98,13 @@ main .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;paddi
 .more{margin:20px 0 0}
 
 /* Sidebar */
-aside{display:flex;flex-direction:column;gap:28px;min-width:0}
-aside h2{margin:0 0 10px;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.drawer-body h2{margin:0 0 10px;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding-bottom:6px;border-bottom:2px solid var(--ink)}
 .bars{display:flex;flex-direction:column;gap:7px}
 .bar{display:grid;grid-template-columns:110px minmax(0,1fr) 32px;gap:8px;align-items:center;font-size:13px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .bar i{display:block;height:8px;background:var(--line);position:relative}
 .bar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w,0%);background:var(--accent)}
 .bar b{font:500 12px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
-.outlets{display:flex;flex-direction:column;max-height:440px;overflow-y:auto;padding-right:4px}
+.outlets{display:flex;flex-direction:column}
 .outlet{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
 .outlet input{accent-color:var(--accent);margin:0}
 .health{width:9px;height:9px;border-radius:50%;background:var(--line)}
@@ -116,11 +115,6 @@ aside h2{margin:0 0 10px;font:800 13px var(--display);font-stretch:110%;letter-s
 .toggle input{accent-color:var(--accent)}
 footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);font-size:12px}
 
-@media (max-width:860px){
-  main .wrap{grid-template-columns:minmax(0,1fr)}
-  aside{order:-1}
-  details.side-panel:not([open]) > :not(summary){display:none}
-}
 @media (max-width:560px){
   .stats .wrap{grid-template-columns:repeat(2,1fr)}
   .stat:nth-child(2){border-right:0}
@@ -130,11 +124,22 @@ footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);fo
   .story h3{font-size:16.5px}
   .bar{grid-template-columns:96px minmax(0,1fr) 28px}
 }
-details.side-panel summary{cursor:pointer;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding:6px 0;border-bottom:2px solid var(--ink);list-style:none}
-details.side-panel summary::-webkit-details-marker{display:none}
-details.side-panel summary::after{content:" +";color:var(--accent)}
-details.side-panel[open] summary::after{content:" −"}
-@media (min-width:861px){details.side-panel summary{display:none}}
+/* Sources drawer: hotspots, outlets & feed health, auto-refresh */
+.src-btn{display:inline-flex;align-items:center;gap:8px}
+.src-btn b{font:500 12px var(--mono);font-variant-numeric:tabular-nums}
+.src-btn .dot{width:7px;height:7px}
+.src-btn.ok .dot{background:var(--fresh)}.src-btn.warn .dot{background:var(--warn)}.src-btn.bad .dot{background:var(--bad)}
+.stat.clickable{cursor:pointer}
+.stat.clickable span{text-decoration:underline dotted;text-underline-offset:3px}
+.scrim{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);opacity:0;pointer-events:none;transition:opacity .2s ease}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:21;width:min(400px,100%);display:flex;flex-direction:column;background:var(--panel);border-left:2px solid var(--ink);transform:translateX(100%);transition:transform .25s ease;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+body.drawer-open{overflow:hidden}
+body.drawer-open .scrim{opacity:1;pointer-events:auto}
+body.drawer-open .drawer{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:2px solid var(--ink)}
+.drawer-head h2{margin:0;font:900 20px var(--display);font-stretch:112%;text-transform:uppercase;letter-spacing:.01em}
+.drawer-close{border:0;background:none;font:400 26px/1 var(--body);cursor:pointer;padding:4px 8px;color:var(--ink)}
+.drawer-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:28px;overscroll-behavior:contain}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -148,6 +153,7 @@ details.side-panel[open] summary::after{content:" −"}
     </div>
     <div class="mast-right">
       <span class="live" id="liveState"><span class="dot"></span><span id="liveText">Connecting</span></span>
+      <button class="btn src-btn" id="srcBtn" type="button" aria-haspopup="dialog" aria-controls="drawer"><span class="dot"></span>Sources <b id="srcBadge">–</b></button>
       <button class="btn" id="refreshBtn" type="button">Refresh</button>
       <button class="btn" id="themeBtn" type="button" aria-label="Toggle dark mode">◐</button>
     </div>
@@ -161,7 +167,7 @@ details.side-panel[open] summary::after{content:" −"}
     <div class="stat"><strong id="sTotal">–</strong><span>Stories loaded</span></div>
     <div class="stat"><strong id="s60">–</strong><span>Last 60 min</span></div>
     <div class="stat"><strong id="s24">–</strong><span>Last 24 hours</span></div>
-    <div class="stat"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
+    <div class="stat clickable" id="feedsStat" role="button" tabindex="0" title="Show sources and feed health"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
   </div>
 </section>
 
@@ -181,29 +187,32 @@ details.side-panel[open] summary::after{content:" −"}
       <div class="empty">Loading headlines from public RSS feeds…</div>
     </section>
 
-    <aside>
-      <details class="side-panel" id="sidePanel">
-        <summary>Regions, outlets &amp; feed health</summary>
-        <div style="display:flex;flex-direction:column;gap:28px;margin-top:14px">
-          <div>
-            <h2>Hotspots · last 24h</h2>
-            <div class="bars" id="bars"></div>
-          </div>
-          <div>
-            <h2>Outlets &amp; feed health</h2>
-            <div class="outlets" id="outlets"></div>
-          </div>
-          <div>
-            <h2>Auto-refresh</h2>
-            <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 15 minutes</label>
-            <p class="note" id="nextRef"></p>
-          </div>
-          <p class="note">Headlines come from each publisher's public RSS feed. A GitHub Actions job collects them every 15 minutes; if that snapshot isn't available, the page fetches the feeds itself through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
-        </div>
-      </details>
-    </aside>
   </div>
 </main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" inert>
+  <div class="drawer-head">
+    <h2 id="drawerTitle">Sources</h2>
+    <button class="drawer-close" id="drawerClose" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body">
+    <div>
+      <h2>Hotspots · last 24h</h2>
+      <div class="bars" id="bars"></div>
+    </div>
+    <div>
+      <h2>Outlets &amp; feed health</h2>
+      <div class="outlets" id="outlets"></div>
+    </div>
+    <div>
+      <h2>Auto-refresh</h2>
+      <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 15 minutes</label>
+      <p class="note" id="nextRef"></p>
+    </div>
+    <p class="note">Headlines come from each publisher's public RSS feed. A GitHub Actions job collects them every 15 minutes; if that snapshot isn't available, the page fetches the feeds itself through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
+  </div>
+</aside>
 
 <footer><div class="wrap">Global Affairs Wire · headlines © their respective publishers</div></footer>
 
@@ -546,6 +555,8 @@ function render(){
   const active = FEEDS.filter(f => !state.disabled.has(f.id));
   const live = active.filter(f => state.health[f.id] && state.health[f.id].status !== "fail").length;
   $("sFeeds").textContent = live + "/" + active.length;
+  $("srcBadge").textContent = live + "/" + active.length;
+  $("srcBtn").className = "btn src-btn " + (!Object.keys(state.health).length ? "" : live === active.length ? "ok" : live >= active.length * 0.8 ? "warn" : "bad");
 
   renderChips(base);
   renderBars(base, now);
@@ -633,7 +644,7 @@ $("refreshBtn").onclick = loadAll;
 $("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 80; render(); });
 $("regionChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); state.shown = 80; render(); });
 $("topicChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.topic = b.dataset.v; LS.set("topic", state.topic); state.shown = 80; render(); });
-$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); render(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
+$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); render(); closeDrawer(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
 $("outlets").addEventListener("change", e => {
   const id = e.target.dataset.id; if (!id) return;
   if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); if (!state.snap) loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
@@ -654,8 +665,28 @@ $("themeBtn").onclick = () => {
 };
 
 /* Sidebar open on desktop, collapsed on phones */
-$("sidePanel").open = matchMedia("(min-width:861px)").matches;
-matchMedia("(min-width:861px)").addEventListener("change", e => { if (e.matches) $("sidePanel").open = true; });
+/* Sources drawer */
+let lastFocus = null;
+function openDrawer(){
+  lastFocus = document.activeElement;
+  $("drawer").inert = false;
+  document.body.classList.add("drawer-open");
+  $("srcBtn").setAttribute("aria-expanded", "true");
+  setTimeout(() => $("drawerClose").focus(), 50);
+}
+function closeDrawer(){
+  if (!document.body.classList.contains("drawer-open")) return;
+  document.body.classList.remove("drawer-open");
+  $("drawer").inert = true;
+  $("srcBtn").setAttribute("aria-expanded", "false");
+  if (lastFocus) lastFocus.focus();
+}
+$("srcBtn").onclick = openDrawer;
+$("feedsStat").onclick = openDrawer;
+$("feedsStat").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openDrawer(); } });
+$("drawerClose").onclick = closeDrawer;
+$("scrim").onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 
 $("feedTotal").textContent = FEEDS.length;
 render();
