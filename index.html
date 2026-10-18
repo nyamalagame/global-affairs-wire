@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Global Affairs Wire</title>
+<meta name="description" content="Live world geopolitics headlines from major international outlets, sorted by time and tagged by region.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: atlas-style wire — masthead with world clocks, stat band, two-column (feed | sidebar), single column on phones */
+:root{
+  --bg:#e9eef1; --panel:#f7f9fa; --ink:#15212b; --muted:#5b6a76; --line:#c9d3da;
+  --accent:#c2410c; --accent-soft:#fbe3d6; --fresh:#0f766e; --warn:#b45309; --bad:#b91c1c;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1519; --panel:#152027; --ink:#e3eaee; --muted:#8fa0ab; --line:#26343d;
+  --accent:#f97316; --accent-soft:#3a2214; --fresh:#2dd4bf; --warn:#fbbf24; --bad:#f87171; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1519; --panel:#152027; --ink:#e3eaee; --muted:#8fa0ab; --line:#26343d;
+  --accent:#f97316; --accent-soft:#3a2214; --fresh:#2dd4bf; --warn:#fbbf24; --bad:#f87171; color-scheme:dark}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Masthead */
+header.mast{border-bottom:3px solid var(--ink)}
+.mast .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-block:22px 14px}
+.brand h1{margin:0;font:900 clamp(30px,6vw,54px)/.9 var(--display);font-stretch:118%;letter-spacing:-.01em;text-transform:uppercase}
+.brand h1 span{color:var(--accent)}
+.brand p{margin:6px 0 0;color:var(--muted);font:500 12px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.mast-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:7px;font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.live.on .dot{background:var(--fresh);box-shadow:0 0 0 0 var(--fresh);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--fresh) 60%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
+.btn{border:1.5px solid var(--ink);background:transparent;padding:7px 14px;font:600 13px var(--body);cursor:pointer;border-radius:2px}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn[disabled]{opacity:.5;cursor:wait}
+
+/* Clock strip */
+.clocks{border-bottom:1px solid var(--line);background:var(--panel)}
+.clocks .wrap{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.clock{flex:1 0 auto;padding:8px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:96px}
+.clock:first-child{padding-left:0}
+.clock b{font:600 10px var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.clock time{font:500 16px var(--mono);font-variant-numeric:tabular-nums}
+
+/* Stats */
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding-block:0}
+.stat{padding:14px 14px 14px 0;border-right:1px solid var(--line)}
+.stat+.stat{padding-left:14px}
+.stat:last-child{border-right:0}
+.stat strong{display:block;font:800 30px/1 var(--display);font-stretch:90%;font-variant-numeric:tabular-nums}
+.stat span{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stats{border-bottom:1px solid var(--line)}
+
+/* Controls */
+.controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.controls .wrap{display:flex;flex-direction:column;gap:10px;padding-block:12px}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;padding:9px 12px;border:1.5px solid var(--line);background:var(--panel);border-radius:2px}
+.search input:focus{border-color:var(--ink);outline:none}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);padding:4px 10px;border-radius:2px;font:500 12px var(--body);cursor:pointer;white-space:nowrap}
+.chip small{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"] small{color:inherit;opacity:.75}
+
+/* Main grid */
+main .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;padding-block:20px 48px}
+.feed{min-width:0}
+.day{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:18px 0 6px;border-bottom:1px solid var(--ink)}
+.day:first-child{padding-top:0}
+.story{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.story time{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);padding-top:3px}
+.story.fresh time{color:var(--accent);font-weight:600}
+.story h3{margin:0;font:700 18px/1.28 var(--display);font-stretch:96%;text-wrap:balance}
+.story h3 a{text-decoration:none}
+.story h3 a:hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.story p{margin:5px 0 0;color:var(--muted);font-size:14px;max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font:500 11px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.src{color:var(--ink);font-weight:600}
+.tag{padding:1px 6px;border:1px solid var(--line);border-radius:2px;color:var(--muted)}
+.tag.topic{border-style:dashed}
+.new{background:var(--accent);color:#fff;padding:1px 6px;border-radius:2px}
+.also{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--body)}
+.empty{padding:40px 0;color:var(--muted)}
+.more{margin:20px 0 0}
+
+/* Sidebar */
+aside{display:flex;flex-direction:column;gap:28px;min-width:0}
+aside h2{margin:0 0 10px;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:110px minmax(0,1fr) 32px;gap:8px;align-items:center;font-size:13px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.bar i{display:block;height:8px;background:var(--line);position:relative}
+.bar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w,0%);background:var(--accent)}
+.bar b{font:500 12px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.outlets{display:flex;flex-direction:column}
+.outlet{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.outlet input{accent-color:var(--accent);margin:0}
+.health{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.health.ok{background:var(--fresh)}.health.slow{background:var(--warn)}.health.fail{background:var(--bad)}
+.outlet small{font:500 11px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);margin:0}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px}
+.toggle input{accent-color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);font-size:12px}
+
+@media (max-width:860px){
+  main .wrap{grid-template-columns:minmax(0,1fr)}
+  aside{order:-1}
+  details.side-panel:not([open]) > :not(summary){display:none}
+}
+@media (max-width:560px){
+  .stats .wrap{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:0}
+  .stat:nth-child(3){padding-left:0}
+  .stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .story{grid-template-columns:48px minmax(0,1fr);gap:10px}
+  .story h3{font-size:16.5px}
+  .bar{grid-template-columns:96px minmax(0,1fr) 28px}
+}
+details.side-panel summary{cursor:pointer;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding:6px 0;border-bottom:2px solid var(--ink);list-style:none}
+details.side-panel summary::-webkit-details-marker{display:none}
+details.side-panel summary::after{content:" +";color:var(--accent)}
+details.side-panel[open] summary::after{content:" −"}
+@media (min-width:861px){details.side-panel summary{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Global Affairs <span>Wire</span></h1>
+      <p>World geopolitics · live from <span id="feedTotal">16</span> outlets</p>
+    </div>
+    <div class="mast-right">
+      <span class="live" id="liveState"><span class="dot"></span><span id="liveText">Connecting</span></span>
+      <button class="btn" id="refreshBtn" type="button">Refresh</button>
+      <button class="btn" id="themeBtn" type="button" aria-label="Toggle dark mode">◐</button>
+    </div>
+  </div>
+</header>
+
+<div class="clocks" aria-label="World clocks"><div class="wrap" id="clocks"></div></div>
+
+<section class="stats" aria-label="Summary">
+  <div class="wrap">
+    <div class="stat"><strong id="sTotal">–</strong><span>Stories loaded</span></div>
+    <div class="stat"><strong id="s60">–</strong><span>Last 60 min</span></div>
+    <div class="stat"><strong id="s24">–</strong><span>Last 24 hours</span></div>
+    <div class="stat"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
+  </div>
+</section>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="search">
+      <input id="q" type="search" placeholder="Search headlines: Ukraine, NATO, tariffs, Taiwan…" autocomplete="off" aria-label="Search headlines">
+    </div>
+    <div class="chips" id="regionChips" role="group" aria-label="Filter by region"></div>
+    <div class="chips" id="topicChips" role="group" aria-label="Filter by topic"></div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+    <section class="feed" id="feed" aria-live="polite">
+      <div class="empty">Loading headlines from public RSS feeds…</div>
+    </section>
+
+    <aside>
+      <details class="side-panel" id="sidePanel">
+        <summary>Regions, outlets &amp; feed health</summary>
+        <div style="display:flex;flex-direction:column;gap:28px;margin-top:14px">
+          <div>
+            <h2>Hotspots · last 24h</h2>
+            <div class="bars" id="bars"></div>
+          </div>
+          <div>
+            <h2>Outlets &amp; feed health</h2>
+            <div class="outlets" id="outlets"></div>
+          </div>
+          <div>
+            <h2>Auto-refresh</h2>
+            <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 10 minutes</label>
+            <p class="note" id="nextRef"></p>
+          </div>
+          <p class="note">Headlines come from each publisher's public RSS feed, fetched through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
+        </div>
+      </details>
+    </aside>
+  </div>
+</main>
+
+<footer><div class="wrap">Global Affairs Wire · headlines © their respective publishers</div></footer>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- Sources ---------- */
+const FEEDS = [
+  {id:"bbc",   name:"BBC World",        url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+  {id:"aj",    name:"Al Jazeera",       url:"https://www.aljazeera.com/xml/rss/all.xml"},
+  {id:"grd",   name:"The Guardian",     url:"https://www.theguardian.com/world/rss"},
+  {id:"nyt",   name:"New York Times",   url:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
+  {id:"dw",    name:"DW",               url:"https://rss.dw.com/rdf/rss-en-top"},
+  {id:"f24",   name:"France 24",        url:"https://www.france24.com/en/monde/rss"},
+  {id:"npr",   name:"NPR World",        url:"https://feeds.npr.org/1004/rss.xml"},
+  {id:"sky",   name:"Sky News",         url:"https://feeds.skynews.com/feeds/rss/world.xml"},
+  {id:"cnbc",  name:"CNBC World",       url:"https://www.cnbc.com/id/100727362/device/rss/rss.html"},
+  {id:"un",    name:"UN News",          url:"https://news.un.org/feed/subscribe/en/news/all/rss.xml"},
+  {id:"fp",    name:"Foreign Policy",   url:"https://foreignpolicy.com/feed/"},
+  {id:"dip",   name:"The Diplomat",     url:"https://thediplomat.com/feed/"},
+  {id:"wotr",  name:"War on the Rocks", url:"https://warontherocks.com/feed/"},
+  {id:"hindu", name:"The Hindu",        url:"https://www.thehindu.com/news/international/feeder/default.rss"},
+  {id:"scmp",  name:"SCMP World",       url:"https://www.scmp.com/rss/5/feed"},
+  {id:"abc",   name:"ABC (Australia)",  url:"https://www.abc.net.au/news/feed/104217382/rss.xml"},
+  {id:"at",    name:"Asia Times",       url:"https://asiatimes.com/feed/"},
+  {id:"eaf",   name:"East Asia Forum",  url:"https://eastasiaforum.org/feed/"}
+];
+
+/* CORS proxies, tried in order. The one that works for a feed is remembered. */
+const PROXIES = [
+  u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+  u => "https://corsproxy.io/?url=" + encodeURIComponent(u),
+  u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u),
+  u => "https://thingproxy.freeboard.io/fetch/" + u
+];
+const RSS2JSON = u => "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(u);
+
+/* ---------- Tagging ---------- */
+const REGIONS = [
+  ["Russia–Ukraine", /\b(ukrain\w*|kyiv|kiev|zelensk\w*|kremlin|moscow|putin|russia\w*|donbas|crimea|kharkiv|odesa|zaporizh\w*|belarus\w*|lukashenko)\b/i],
+  ["Middle East", /\b(israel\w*|gaza|hamas|hezbollah|lebanon|leban\w*|west bank|iran\w*|tehran|syria\w*|damascus|iraq\w*|baghdad|yemen\w*|houthi\w*|saudi\w*|riyadh|qatar\w*|doha|uae|emirat\w*|jordan\w*|turkey|t[uü]rkiye|turkish|erdogan|egypt\w*|cairo|netanyahu|kurd\w*|palestin\w*)\b/i],
+  ["Europe", /\b(europe\w*|\beu\b|brussels|nato|germany|german|berlin|france|french|paris|macron|britain|british|uk\b|london|starmer|ital\w*|rome|spain|spanish|madrid|poland|polish|warsaw|hungar\w*|orban|netherlands|dutch|sweden|finland|norway|denmark|greenland|baltic|estonia|latvia|lithuania|serbia|kosovo|balkan\w*|romania|moldova|georgia\b|tbilisi|armenia|azerbaijan|ireland|swiss|switzerland|austria|greece|greek|portugal|belgi\w*)\b/i],
+  ["East Asia & Pacific", /\b(china|chinese|beijing|xi jinping|taiwan\w*|taipei|hong kong|japan\w*|tokyo|korea\w*|seoul|pyongyang|kim jong|philippin\w*|manila|vietnam\w*|hanoi|indonesia\w*|jakarta|malaysia\w*|thailand|thai\b|bangkok|myanmar|burma|cambodia|singapore|australia\w*|canberra|new zealand|pacific|south china sea|asean)\b/i],
+  ["South & Central Asia", /\b(india\w*|delhi|modi|pakistan\w*|islamabad|kashmir|afghan\w*|taliban|kabul|bangladesh\w*|dhaka|sri lanka\w*|nepal\w*|bhutan|maldiv\w*|kazakh\w*|uzbek\w*|kyrgyz\w*|tajik\w*|turkmen\w*)\b/i],
+  ["Africa", /\b(africa\w*|sudan\w*|khartoum|darfur|ethiopia\w*|eritrea|somalia\w*|kenya\w*|nairobi|nigeria\w*|abuja|sahel|mali\b|niger\b|burkina|chad|congo\w*|drc\b|kinshasa|rwanda\w*|uganda\w*|tanzania\w*|mozambique|zimbabwe|south africa\w*|pretoria|libya\w*|tripoli|tunisia\w*|algeria\w*|morocc\w*|senegal|ghana\w*|cameroon|angola)\b/i],
+  ["Americas", /\b(united states|u\.s\.|\bus\b|america\w*|washington|white house|trump|pentagon|congress|senate|canada|canadian|ottawa|mexic\w*|brazil\w*|lula|argentin\w*|milei|venezuel\w*|maduro|colombia\w*|peru\w*|chile\w*|cuba\w*|haiti\w*|ecuador\w*|bolivia\w*|panama|nicaragua\w*|guatemala\w*|latin america)\b/i]
+];
+const TOPICS = [
+  ["Conflict", /\b(war|wars|strike[sd]?|airstrike\w*|missile\w*|drone\w*|troops|military|offensive|ceasefire|truce|shelling|attack\w*|killed|militant\w*|insurgen\w*|invasion|army|bomb\w*|clashes|hostage\w*)\b/i],
+  ["Diplomacy", /\b(talks|summit|diplomat\w*|minister\w*|envoy|negotiat\w*|treaty|accord|peace deal|peace plan|bilateral|visit\w*|meets|ambassador\w*|g7|g20|un security council|united nations)\b/i],
+  ["Trade & sanctions", /\b(sanction\w*|tariff\w*|trade|export\w*|import\w*|embargo|oil|gas|lng|opec|economy|economic|supply chain|chips?|semiconductor\w*|rare earth\w*)\b/i],
+  ["Elections & politics", /\b(election\w*|vote[sd]?|voting|ballot|poll\w*|referendum|parliament\w*|coalition|president\w*|prime minister|coup|protest\w*|opposition|impeach\w*|resign\w*)\b/i],
+  ["Nuclear & security", /\b(nuclear|uranium|enrich\w*|iaea|warhead\w*|deterren\w*|cyber\w*|espionage|spy|spies|intelligence|terror\w*|defen[cs]e spending|arms)\b/i],
+  ["Humanitarian", /\b(refugee\w*|migrant\w*|migration|humanitarian|famine|aid\b|displaced|asylum|human rights|genocide|war crimes?|icc|icj)\b/i]
+];
+const tagWith = (rules, text) => rules.filter(([, re]) => re.test(text)).map(([n]) => n);
+
+/* ---------- State ---------- */
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem("gaw:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem("gaw:" + k, JSON.stringify(v)); } catch {} }
+};
+const state = {
+  stories: [],
+  health: {},            // id -> {status, ms, count, err}
+  proxyFor: LS.get("proxyFor", {}),
+  disabled: new Set(LS.get("disabled", [])),
+  region: LS.get("region", "All"),
+  topic: LS.get("topic", "All"),
+  q: "",
+  shown: 80,
+  loading: false,
+  lastLoad: 0,
+  auto: LS.get("auto", true)
+};
+const REFRESH_MS = 10 * 60 * 1000;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Fetching ---------- */
+function withTimeout(ms){ const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); return {signal:c.signal, done:() => clearTimeout(t)}; }
+
+async function fetchText(url, ms = 12000){
+  const t = withTimeout(ms);
+  try {
+    const r = await fetch(url, {signal:t.signal, cache:"no-store"});
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.text();
+  } finally { t.done(); }
+}
+
+function stripHtml(s){
+  if (!s) return "";
+  const d = new DOMParser().parseFromString(s, "text/html");
+  return (d.body.textContent || "").replace(/\s+/g, " ").trim();
+}
+function txt(el, ...names){
+  for (const n of names){
+    const found = el.getElementsByTagName(n)[0];
+    if (found && found.textContent.trim()) return found.textContent.trim();
+  }
+  return "";
+}
+
+/* Lenient fallback for feeds whose XML is malformed (missing closing tags, stray entities) */
+function parseLoose(xml, feed){
+  const blocks = xml.match(/<(item|entry)[\s>][\s\S]*?<\/\1>/gi) || [];
+  if (!blocks.length) throw new Error("Not a feed");
+  const pick = (b, ...tags) => {
+    for (const t of tags){
+      const m = b.match(new RegExp("<" + t + "(?:\\s[^>]*)?>([\\s\\S]*?)</" + t + ">", "i"));
+      if (m && m[1].trim()) return m[1].replace(/^<!\[CDATA\[|\]\]>$/g, "").trim();
+    }
+    return "";
+  };
+  return blocks.map(b => {
+    let link = pick(b, "link", "guid");
+    if (!link){ const m = b.match(/<link[^>]*href=["']([^"']+)["']/i); link = m ? m[1] : ""; }
+    return makeStory(feed, pick(b, "title"), link.replace(/&amp;/g, "&"), pick(b, "pubDate", "dc:date", "published", "updated"), pick(b, "description", "summary"));
+  });
+}
+
+function parseXml(xml, feed){
+  const doc = new DOMParser().parseFromString(xml, "text/xml");
+  if (doc.getElementsByTagName("parsererror").length) return parseLoose(xml, feed);
+  let nodes = [...doc.getElementsByTagName("item")];
+  const atom = !nodes.length;
+  if (atom) nodes = [...doc.getElementsByTagName("entry")];
+  if (!nodes.length) throw new Error("Empty feed");
+  return nodes.map(n => {
+    let link = "";
+    if (atom){
+      const ls = [...n.getElementsByTagName("link")];
+      const alt = ls.find(l => (l.getAttribute("rel") || "alternate") === "alternate") || ls[0];
+      link = alt ? alt.getAttribute("href") : "";
+    } else {
+      link = txt(n, "link", "guid");
+    }
+    const date = txt(n, "pubDate", "dc:date", "published", "updated", "date");
+    return makeStory(feed, txt(n, "title"), link, date, txt(n, "description", "summary", "content", "content:encoded"));
+  });
+}
+
+function parseRss2Json(json, feed){
+  const j = JSON.parse(json);
+  if (j.status !== "ok" || !j.items) throw new Error("rss2json failed");
+  return j.items.map(i => makeStory(feed, i.title, i.link, i.pubDate ? i.pubDate.replace(" ", "T") + "Z" : "", i.description));
+}
+
+function makeStory(feed, title, link, date, desc){
+  title = stripHtml(title);
+  let summary = stripHtml(desc);
+  if (summary.toLowerCase().startsWith(title.toLowerCase())) summary = summary.slice(title.length).trim();
+  if (summary.length > 240) summary = summary.slice(0, 237).replace(/\s+\S*$/, "") + "…";
+  const t = Date.parse(date);
+  const hay = title + " " + summary;
+  return {
+    feed: feed.id, src: feed.name, title, link: (link || "").trim(), summary,
+    ts: isNaN(t) ? 0 : Math.min(t, Date.now()),
+    regions: tagWith(REGIONS, hay), topics: tagWith(TOPICS, hay),
+    key: normKey(title)
+  };
+}
+const normKey = t => t.toLowerCase().replace(/[^a-z0-9 ]/g, "").split(" ").filter(w => w.length > 3).slice(0, 7).sort().join(" ");
+
+async function loadFeed(feed){
+  const start = performance.now();
+  const order = [...PROXIES.keys()];
+  const pref = state.proxyFor[feed.id];
+  if (pref != null && pref < PROXIES.length) order.unshift(...order.splice(order.indexOf(pref), 1));
+  let lastErr;
+  for (const i of order){
+    try {
+      const xml = await fetchText(PROXIES[i](feed.url));
+      const items = parseXml(xml, feed);
+      state.proxyFor[feed.id] = i;
+      return done(items);
+    } catch (e) { lastErr = e; }
+  }
+  try {
+    const items = parseRss2Json(await fetchText(RSS2JSON(feed.url)), feed);
+    return done(items);
+  } catch (e) { lastErr = e; }
+  state.health[feed.id] = {status:"fail", ms:0, count:0, err: String(lastErr && lastErr.message || lastErr)};
+  return [];
+
+  function done(items){
+    const ms = performance.now() - start;
+    state.health[feed.id] = {status: ms > 8000 ? "slow" : "ok", ms, count: items.length};
+    return items;
+  }
+}
+
+async function loadAll(){
+  if (state.loading) return;
+  state.loading = true;
+  $("refreshBtn").disabled = true;
+  setLive("Updating", false);
+  const active = FEEDS.filter(f => !state.disabled.has(f.id));
+  const fresh = [];
+  await Promise.all(active.map(f => loadFeed(f).then(items => {
+    fresh.push(...items);
+    // render progressively as feeds land
+    state.stories = mergeStories(fresh, state.stories.filter(s => !active.some(f => f.id === s.feed)));
+    render();
+  })));
+  state.stories = mergeStories(fresh, []);
+  LS.set("proxyFor", state.proxyFor);
+  state.loading = false;
+  state.lastLoad = Date.now();
+  $("refreshBtn").disabled = false;
+  const live = active.filter(f => state.health[f.id] && state.health[f.id].status !== "fail").length;
+  setLive(live ? "Live" : "Feeds unreachable", live > 0);
+  render();
+}
+
+function mergeStories(a, b){
+  const all = [...a, ...b].filter(s => s.title && s.link);
+  const byLink = new Map();
+  for (const s of all) if (!byLink.has(s.link)) byLink.set(s.link, s);
+  // group near-identical headlines across outlets
+  const groups = new Map();
+  for (const s of byLink.values()){
+    const k = s.key || s.link;
+    const g = groups.get(k);
+    if (!g) groups.set(k, {...s, also: []});
+    else if (g.src !== s.src && !g.also.includes(s.src)){ g.also.push(s.src); g.ts = Math.max(g.ts, s.ts); }
+  }
+  return [...groups.values()].sort((x, y) => y.ts - x.ts);
+}
+
+/* ---------- Rendering ---------- */
+function setLive(text, on){ $("liveText").textContent = text; $("liveState").classList.toggle("on", !!on); }
+
+function visibleStories(){
+  const q = state.q.trim().toLowerCase();
+  return state.stories.filter(s =>
+    !state.disabled.has(s.feed) &&
+    (state.region === "All" || s.regions.includes(state.region)) &&
+    (state.topic === "All" || s.topics.includes(state.topic)) &&
+    (!q || (s.title + " " + s.summary + " " + s.src).toLowerCase().includes(q))
+  );
+}
+
+const fmtTime = ts => ts ? new Date(ts).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : "—";
+function dayLabel(ts){
+  if (!ts) return "Undated";
+  const d = new Date(ts), now = new Date();
+  const start = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((start(now) - start(d)) / 864e5);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+  return d.toLocaleDateString([], {weekday:"long", day:"numeric", month:"long"});
+}
+function ago(ts){
+  if (!ts) return "";
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60);
+  return h < 48 ? h + " h ago" : "";
+}
+
+function render(){
+  const now = Date.now();
+  const base = state.stories.filter(s => !state.disabled.has(s.feed));
+  $("sTotal").textContent = base.length;
+  $("s60").textContent = base.filter(s => now - s.ts < 36e5).length;
+  $("s24").textContent = base.filter(s => now - s.ts < 864e5).length;
+  const active = FEEDS.filter(f => !state.disabled.has(f.id));
+  const live = active.filter(f => state.health[f.id] && state.health[f.id].status !== "fail").length;
+  $("sFeeds").textContent = live + "/" + active.length;
+
+  renderChips(base);
+  renderBars(base, now);
+  renderOutlets();
+
+  const list = visibleStories();
+  const feed = $("feed");
+  if (!list.length){
+    feed.innerHTML = `<div class="empty">${state.loading ? "Loading headlines from public RSS feeds…" : base.length ? "No stories match these filters. Try another region, topic or search term." : "No feeds could be reached. Check your connection and press Refresh."}</div>`;
+    return;
+  }
+  let html = "", lastDay = "";
+  for (const s of list.slice(0, state.shown)){
+    const day = dayLabel(s.ts);
+    if (day !== lastDay){ html += `<div class="day">${esc(day)}</div>`; lastDay = day; }
+    const fresh = s.ts && now - s.ts < 30 * 60000;
+    html += `<article class="story${fresh ? " fresh" : ""}">
+      <time datetime="${s.ts ? new Date(s.ts).toISOString() : ""}" title="${esc(ago(s.ts))}">${fmtTime(s.ts)}</time>
+      <div style="min-width:0">
+        <h3><a href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a></h3>
+        ${s.summary ? `<p>${esc(s.summary)}</p>` : ""}
+        <div class="meta">
+          ${fresh ? `<span class="new">New</span>` : ""}
+          <span class="src">${esc(s.src)}</span>
+          ${s.regions.slice(0, 2).map(r => `<span class="tag">${esc(r)}</span>`).join("")}
+          ${s.topics.slice(0, 2).map(t => `<span class="tag topic">${esc(t)}</span>`).join("")}
+          ${s.also.length ? `<span class="also">also ${esc(s.also.join(", "))}</span>` : ""}
+        </div>
+      </div>
+    </article>`;
+  }
+  if (list.length > state.shown) html += `<button class="btn more" id="moreBtn" type="button">Show ${Math.min(80, list.length - state.shown)} more of ${list.length - state.shown}</button>`;
+  feed.innerHTML = html;
+  const mb = $("moreBtn"); if (mb) mb.onclick = () => { state.shown += 80; render(); };
+}
+
+function renderChips(base){
+  const mk = (el, rules, key) => {
+    const counts = Object.fromEntries(rules.map(([n]) => [n, 0]));
+    for (const s of base) for (const n of s[key === "region" ? "regions" : "topics"]) counts[n]++;
+    const names = ["All", ...rules.map(([n]) => n)];
+    el.innerHTML = names.map(n => `<button type="button" class="chip" data-v="${esc(n)}" aria-pressed="${state[key] === n}">${esc(n === "All" ? (key === "region" ? "All regions" : "All topics") : n)}${n === "All" ? "" : `<small>${counts[n]}</small>`}</button>`).join("");
+  };
+  mk($("regionChips"), REGIONS, "region");
+  mk($("topicChips"), TOPICS, "topic");
+}
+
+function renderBars(base, now){
+  const day = base.filter(s => now - s.ts < 864e5);
+  const rows = REGIONS.map(([n]) => [n, day.filter(s => s.regions.includes(n)).length]).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...rows.map(r => r[1]));
+  $("bars").innerHTML = rows.map(([n, c]) => `<button type="button" class="bar" data-v="${esc(n)}" title="Show ${esc(n)} stories"><span>${esc(n)}</span><i style="--w:${(c / max * 100).toFixed(1)}%"></i><b>${c}</b></button>`).join("");
+}
+
+function renderOutlets(){
+  $("outlets").innerHTML = FEEDS.map(f => {
+    const h = state.health[f.id];
+    const off = state.disabled.has(f.id);
+    const cls = off ? "" : h ? h.status : "";
+    const info = off ? "off" : !h ? "…" : h.status === "fail" ? "down" : `${h.count} · ${(h.ms / 1000).toFixed(1)}s`;
+    const title = h && h.err ? ` title="${esc(h.err)}"` : "";
+    return `<label class="outlet"${title}><input type="checkbox" data-id="${f.id}" ${off ? "" : "checked"}><span style="display:flex;align-items:center;gap:8px;min-width:0"><span class="health ${cls}"></span>${esc(f.name)}</span><small>${info}</small></label>`;
+  }).join("");
+}
+
+/* ---------- Clocks ---------- */
+const ZONES = [["Local", undefined], ["UTC", "UTC"], ["Washington", "America/New_York"], ["London", "Europe/London"], ["Brussels", "Europe/Brussels"], ["Moscow", "Europe/Moscow"], ["Tehran", "Asia/Tehran"], ["New Delhi", "Asia/Kolkata"], ["Beijing", "Asia/Shanghai"], ["Tokyo", "Asia/Tokyo"]];
+$("clocks").innerHTML = ZONES.map(([n], i) => `<div class="clock"><b>${n}</b><time id="clk${i}">--:--</time></div>`).join("");
+function tick(){
+  const d = new Date();
+  ZONES.forEach(([, tz], i) => {
+    $("clk" + i).textContent = d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", timeZone: tz});
+  });
+  if (state.auto && state.lastLoad){
+    const left = Math.max(0, state.lastLoad + REFRESH_MS - Date.now());
+    $("nextRef").textContent = `Next refresh in ${Math.ceil(left / 60000)} min · last updated ${fmtTime(state.lastLoad)}`;
+    if (left === 0 && !state.loading && document.visibilityState === "visible") loadAll();
+  } else if (state.lastLoad) {
+    $("nextRef").textContent = `Auto-refresh off · last updated ${fmtTime(state.lastLoad)}`;
+  }
+}
+
+/* ---------- Events ---------- */
+$("refreshBtn").onclick = loadAll;
+$("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 80; render(); });
+$("regionChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); state.shown = 80; render(); });
+$("topicChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.topic = b.dataset.v; LS.set("topic", state.topic); state.shown = 80; render(); });
+$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); render(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
+$("outlets").addEventListener("change", e => {
+  const id = e.target.dataset.id; if (!id) return;
+  if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
+  else { state.disabled.add(id); LS.set("disabled", [...state.disabled]); }
+  render();
+});
+$("autoRef").checked = state.auto;
+$("autoRef").addEventListener("change", e => { state.auto = e.target.checked; LS.set("auto", state.auto); tick(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && state.auto && Date.now() - state.lastLoad > REFRESH_MS) loadAll(); });
+
+/* Theme toggle */
+const savedTheme = LS.get("theme", null);
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+$("themeBtn").onclick = () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next; LS.set("theme", next);
+};
+
+/* Sidebar open on desktop, collapsed on phones */
+$("sidePanel").open = matchMedia("(min-width:861px)").matches;
+matchMedia("(min-width:861px)").addEventListener("change", e => { if (e.matches) $("sidePanel").open = true; });
+
+$("feedTotal").textContent = FEEDS.length;
+render();
+tick();
+setInterval(tick, 15000);
+loadAll();
+})();
+</script>
+</body>
+</html>
