@@ -76,6 +76,20 @@ header.mast{border-bottom:3px solid var(--ink)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .chip[aria-pressed="true"] small{color:inherit;opacity:.75}
 
+/* Commodity strip */
+.ticker{display:flex;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);background:var(--panel);border-radius:2px}
+.tk{flex:0 0 auto;display:grid;grid-template-columns:auto auto;align-items:baseline;column-gap:10px;row-gap:1px;padding:6px 12px 5px;border-right:1px solid var(--line)}
+.tk:last-child{border-right:0}
+.tk .n{grid-column:1/3;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.tk .n small{font-size:9px;letter-spacing:.04em;opacity:.8;text-transform:none}
+.tk.in .n{color:var(--accent)}
+.tk .p{font:600 15px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tk .c{font:500 12px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tk .s{grid-column:1/3;display:block;height:14px}
+.tk .s svg{display:block;width:100%;height:14px}
+.tk.meta{align-content:center}
+.up{color:var(--fresh)}.dn{color:var(--bad)}.flat{color:var(--muted)}
+
 /* Main grid */
 main .wrap{padding-block:20px 48px}
 .feed{min-width:0}
@@ -116,6 +130,9 @@ main .wrap{padding-block:20px 48px}
 footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);font-size:12px}
 
 @media (max-width:560px){
+  .controls{position:static}
+  .tk{padding:5px 10px 4px}
+  .tk .p{font-size:14px}
   .stats .wrap{grid-template-columns:repeat(2,1fr)}
   .stat:nth-child(2){border-right:0}
   .stat:nth-child(3){padding-left:0}
@@ -178,6 +195,7 @@ body.drawer-open .drawer{transform:none}
     </div>
     <div class="chips" id="regionChips" role="group" aria-label="Filter by region"></div>
     <div class="chips" id="topicChips" role="group" aria-label="Filter by topic"></div>
+    <div class="ticker" id="ticker" role="region" aria-label="Commodity prices" hidden></div>
   </div>
 </div>
 
@@ -465,8 +483,47 @@ async function loadSnapshot(){
   state.snap = true;
 }
 
+/* Commodity prices (data/markets.json, built by the same GitHub Actions job) */
+async function loadMarkets(){
+  try {
+    const r = await fetch("data/markets.json?t=" + Date.now(), {cache:"no-store"});
+    if (!r.ok) return;
+    renderMarkets(await r.json());
+  } catch {}
+}
+function fmtPrice(i){
+  if (i.currency === "INR") return "₹" + Math.round(i.price).toLocaleString("en-IN");
+  const d = i.id === "usdinr" ? 2 : i.price >= 1000 ? 0 : i.price >= 10 ? 2 : 3;
+  return i.price.toLocaleString("en-US", {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function sparkline(vals){
+  if (!vals || vals.length < 2) return "";
+  const w = 100, h = 14, min = Math.min(...vals), max = Math.max(...vals), rng = max - min || 1;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * w).toFixed(1)},${(h - 1.5 - (v - min) / rng * (h - 3)).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.4" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function renderMarkets(j){
+  const el = $("ticker");
+  if (!j || !Array.isArray(j.items) || !j.items.length){ el.hidden = true; return; }
+  const when = t => new Date(t).toLocaleString([], {weekday:"short", hour:"2-digit", minute:"2-digit"});
+  el.innerHTML = j.items.map(i => {
+    const ch = i.prev ? (i.price - i.prev) / i.prev * 100 : null;
+    const cls = ch == null ? "flat" : ch > 0.005 ? "up" : ch < -0.005 ? "dn" : "flat";
+    const chTxt = ch == null ? "–" : (ch > 0 ? "▲ +" : ch < 0 ? "▼ " : "") + ch.toFixed(2) + "%";
+    const unit = i.group === "India" ? i.unit + " ex-GST" : i.unit;
+    const tip = [i.name, unit, i.withGst ? `₹${i.withGst.toLocaleString("en-IN")} incl. ${Math.round((j.indiaGst || .03) * 100)}% GST` : "", `last trade ${when(i.asOf)}`, i.source, i.stale ? "last known value" : ""].filter(Boolean).join(" · ");
+    return `<div class="tk${i.group === "India" ? " in" : ""}" title="${esc(tip)}">
+      <span class="n">${esc(i.name)} <small>${esc(unit)}</small></span>
+      <span class="p">${fmtPrice(i)}</span><span class="c ${cls}">${chTxt}</span>
+      <span class="s ${cls}">${sparkline(i.spark)}</span>
+    </div>`;
+  }).join("") + `<div class="tk meta"><span class="n">Futures · delayed · vs prev. close</span><span class="c flat">Updated ${fmtTime(Date.parse(j.generated))}</span></div>`;
+  el.hidden = false;
+}
+
 async function loadAll(){
   if (state.loading) return;
+  loadMarkets();
   state.loading = true;
   $("refreshBtn").disabled = true;
   setLive("Updating", false);

@@ -31,6 +31,12 @@ jobs:
         env:
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
+      - name: Fetch commodity prices
+        run: node scripts/fetch-markets.mjs
+        continue-on-error: true
+        env:
+          SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
