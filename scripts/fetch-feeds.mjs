@@ -2,7 +2,7 @@
 // with a fresh data/feeds.json snapshot. Runs in GitHub Actions on Node 20+.
 // No dependencies: feeds are fetched server-side, so no CORS proxy is needed.
 
-import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, copyFile, cp } from "node:fs/promises";
 
 const KEEP_HOURS = 72;      // how long a story stays in the snapshot
 const MAX_ITEMS = 3000;     // hard cap on snapshot size
@@ -51,7 +51,7 @@ export function parseFeed(xml, feedId, feedUrl = "") {
     if (summary.length > 240) summary = summary.slice(0, 237).replace(/\s+\S*$/, "") + "…";
     const t = Date.parse(clean(pick(b, "pubDate", "dc:date", "published", "updated", "date")));
     return { feed: feedId, title, link, summary, ts: Number.isFinite(t) ? Math.min(t, Date.now()) : 0 };
-  }).filter(i => i.title && /^https?:\/\//.test(i.link));
+  }).filter(i => i.title && !/^(undefined|null)$/i.test(i.title) && /^https?:\/\//.test(i.link));
 }
 
 async function fetchFeed(f) {
@@ -102,6 +102,8 @@ const snapshot = { generated: new Date().toISOString(), feeds: results.map(r => 
 await mkdir("_site/data", { recursive: true });
 await writeFile("_site/data/feeds.json", JSON.stringify(snapshot));
 for (const f of ["index.html", "README.md"]) await copyFile(f, `_site/${f}`).catch(() => {});
+// Shared styles used by every tab (World, India and Dalal Street)
+await cp("assets", "_site/assets", { recursive: true });
 await writeFile("_site/.nojekyll", "");
 
 const live = results.filter(r => r.meta.status !== "fail").length;

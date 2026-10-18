@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dalal Street · Global Affairs Wire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/wire.css">
+<script>/* apply the light/dark choice saved on any Global Affairs Wire tab */try{var t=JSON.parse(localStorage.getItem("gaw:theme"));if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Global Affairs <span>Wire</span></h1>
+      <small>World · India · Markets</small>
+    </div>
+    <nav class="editions" aria-label="Editions">
+      <a class="ed" href="../#world">World</a>
+      <a class="ed" href="../#india">India</a>
+      <a class="ed" href="./" aria-current="page">Dalal Street</a>
+    </nav>
+    <span id="mkt" class="pill closed" title="NSE/BSE equity hours 09:15–15:30 IST, Mon–Fri. Exchange holidays are not accounted for."><span class="pl-long">Market closed</span><span class="pl-short">Closed</span></span>
+    <span id="clock" class="clock">--:--:-- IST</span>
+    <button id="srcbtn" class="btn srcbtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="drawer" title="Sources: outlets, feed health and fresh news">
+      <span id="sdot" class="sdot load" aria-hidden="true"></span><span class="lbl">Sources</span><span id="scount" class="scount"></span><span id="sfilter" class="sfilter" hidden></span>
+    </button>
+    <button id="refresh" class="btn primary" type="button" title="Load the latest news"></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="tabs" id="tabs" role="toolbar" aria-label="Categories"></div>
+    <div id="moreSlot" class="more-slot"></div>
+    <div class="tools">
+      <button id="searchBtn" class="iconbtn sm" type="button" aria-label="Search headlines" aria-expanded="false" aria-controls="searchRow" title="Search headlines">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button id="viewBtn" class="iconbtn sm" type="button" aria-pressed="false" aria-label="Show summaries and images" title="Show summaries and images">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h10M4 15h16M4 19h10"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="searchRow" class="search" hidden>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search headlines: Reliance, RBI, Nifty IT…" aria-label="Search headlines" autocomplete="off">
+    <button id="qClear" class="clear" type="button" aria-label="Clear and close search">✕</button>
+  </div>
+  <p class="stats" id="stats" aria-live="polite">Loading news…</p>
+  <div id="moreMenu" class="menu" role="menu" aria-label="More categories" hidden></div>
+
+  <div class="grid">
+    <section class="stream" id="stream" aria-live="polite"></section>
+  </div>
+
+  <p class="foot">Headlines come from each publisher's public RSS feed, collected by a GitHub job every 15 minutes, or whenever you run it (or through a free CORS proxy when this file is opened from your device). Times are shown in IST. Click a headline to read the full story on the publisher's site.</p>
+</main>
+
+<div id="scrim" class="scrim" hidden></div>
+<aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
+      <div class="drawer-head">
+        <h2 id="drawerTitle">Sources</h2>
+        <button id="drawerClose" class="iconbtn" type="button" aria-label="Close sources">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Outlets</h2>
+          <button id="allOutlets" class="linkbtn" type="button">Show all</button>
+        </div>
+        <div class="outlets" id="outlets"></div>
+      </div>
+      <div class="panel">
+        <h2>Feed health</h2>
+        <ul class="health" id="health"></ul>
+        <p class="note" id="via"></p>
+      </div>
+      <div class="panel">
+        <h2>Fresh news</h2>
+        <p class="note" style="margin-top:0">News is fetched automatically every 15 minutes. For newer stories right away, open the fetch page, press <b>Run workflow</b>, wait about two minutes, then press Refresh here.</p>
+        <a class="btn" style="margin-top:10px;text-decoration:none" href="https://github.com/nyamalagame/global-affairs-wire/actions/workflows/feeds.yml" target="_blank" rel="noopener noreferrer">Open fetch page ↗</a>
+        <p class="note" id="next"></p>
+      </div>
+</aside>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Config ---------- */
+  var OUTLETS = {
+    et:   {name:"Economic Times",    short:"ET", color:"--o-et"},
+    mint: {name:"Mint",              short:"Mint", color:"--o-mint"},
+    bs:   {name:"Business Standard", short:"BS", color:"--o-bs"},
+    mc:   {name:"Moneycontrol",      short:"MC", color:"--o-mc"},
+    bl:   {name:"BusinessLine",      short:"BL", color:"--o-bl"},
+    fe:   {name:"Financial Express", short:"FE", color:"--o-fe"},
+    cnbc: {name:"CNBC-TV18",         short:"CNBC", color:"--o-cnbc"},
+    bt:   {name:"Business Today",    short:"BT", color:"--o-bt"},
+    zee:  {name:"Zee Business",      short:"Zee", color:"--o-zee"},
+    print:{name:"ThePrint",          short:"Print", color:"--o-print"},
+    me:   {name:"Mostly Economics",  short:"MostEc", color:"--o-me"},
+    te:   {name:"Trading Economics", short:"TradEc", color:"--o-te"},
+    hindu:{name:"The Hindu",         short:"Hindu", color:"--o-hindu"},
+    etb:  {name:"ETBFSI",            short:"ETBFSI", color:"--o-etb"},
+    nse:  {name:"NSE",               short:"NSE", color:"--o-nse"},
+    bse:  {name:"BSE",               short:"BSE", color:"--o-bse"},
+    tb:   {name:"Trade Brains",      short:"TBrains", color:"--o-tb"},
+    ep:   {name:"EquityPandit",      short:"EqPandit", color:"--o-ep"},
+    ai:   {name:"Alpha Ideas",       short:"AlphaId", color:"--o-ai"}
+  };
+
+  var FEEDS = [
+    {id:"et-top",     outlet:"et",   section:"Top stories", url:"https://economictimes.indiatimes.com/rssfeedstopstories.cms"},
+    {id:"et-markets", outlet:"et",   section:"Markets",     url:"https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"},
+    {id:"et-stocks",  outlet:"et",   section:"Stocks",      url:"https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms"},
+    {id:"et-ipo",     outlet:"et",   section:"IPOs",        url:"https://economictimes.indiatimes.com/markets/ipos/fpos/rssfeeds/14655708.cms"},
+    {id:"et-expert",  outlet:"et",   section:"Expert view", url:"https://economictimes.indiatimes.com/markets/expert-view/rssfeeds/50649960.cms"},
+    {id:"et-econ",    outlet:"et",   section:"Economy",     url:"https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms"},
+    {id:"et-cos",     outlet:"et",   section:"Companies",   url:"https://economictimes.indiatimes.com/news/company/rssfeeds/2143429.cms"},
+    {id:"et-bank",    outlet:"et",   section:"Banking & finance", url:"https://economictimes.indiatimes.com/rssfeeds/13358259.cms"},
+    {id:"et-cmdty",   outlet:"et",   section:"Commodities", url:"https://economictimes.indiatimes.com/markets/commodities/rssfeeds/1808152121.cms"},
+    {id:"et-forex",   outlet:"et",   section:"Forex",       url:"https://economictimes.indiatimes.com/markets/forex/rssfeeds/1150221130.cms"},
+    {id:"et-mf",      outlet:"et",   section:"Mutual funds", url:"https://economictimes.indiatimes.com/mf/mf-news/rssfeeds/1107225967.cms"},
+    {id:"mint-mkt",   outlet:"mint", section:"Markets",     url:"https://www.livemint.com/rss/markets"},
+    {id:"mint-money", outlet:"mint", section:"Money",       url:"https://www.livemint.com/rss/money"},
+    {id:"mint-cos",   outlet:"mint", section:"Companies",   url:"https://www.livemint.com/rss/companies"},
+    {id:"bs-mkt",     outlet:"bs",   section:"Markets",     url:"https://www.business-standard.com/rss/markets-106.rss"},
+    {id:"bs-econ",    outlet:"bs",   section:"Economy",     url:"https://www.business-standard.com/rss/economy-102.rss"},
+    {id:"mc-latest",  outlet:"mc",   section:"Latest",      url:"https://www.moneycontrol.com/rss/latestnews.xml"},
+    {id:"mc-biz",     outlet:"mc",   section:"Business",    url:"https://www.moneycontrol.com/rss/business.xml"},
+    {id:"bl-mkt",     outlet:"bl",   section:"Markets",     url:"https://www.thehindubusinessline.com/markets/feeder/default.rss"},
+    {id:"bl-stocks",  outlet:"bl",   section:"Stock markets", url:"https://www.thehindubusinessline.com/markets/stock-markets/feeder/default.rss"},
+    {id:"bl-econ",    outlet:"bl",   section:"Economy",     url:"https://www.thehindubusinessline.com/economy/feeder/default.rss"},
+    {id:"bl-bank",    outlet:"bl",   section:"Money & banking", url:"https://www.thehindubusinessline.com/money-and-banking/feeder/default.rss"},
+    {id:"bl-cos",     outlet:"bl",   section:"Companies",   url:"https://www.thehindubusinessline.com/companies/feeder/default.rss"},
+    {id:"bl-gold",    outlet:"bl",   section:"Gold & silver", url:"https://www.thehindubusinessline.com/markets/gold/feeder/default.rss"},
+    {id:"bl-ta",      outlet:"bl",   section:"Technical analysis", picks:true, url:"https://www.thehindubusinessline.com/portfolio/technical-analysis/feeder/default.rss"},
+    {id:"bl-dtg",     outlet:"bl",   section:"Day trading guide",  picks:true, url:"https://www.thehindubusinessline.com/portfolio/day-trading-guide/feeder/default.rss"},
+    {id:"bl-fund",    outlet:"bl",   section:"Stock fundamentals", picks:true, url:"https://www.thehindubusinessline.com/portfolio/stock-fundamental-analysis-india/feeder/default.rss"},
+    {id:"fe-mkt",     outlet:"fe",   section:"Market",      url:"https://www.financialexpress.com/market/feed/"},
+    {id:"cnbc-mkt",   outlet:"cnbc", section:"Market",      url:"https://www.cnbctv18.com/commonfeeds/v1/cne/rss/market.xml"},
+    {id:"cnbc-econ",  outlet:"cnbc", section:"Economy",     url:"https://www.cnbctv18.com/commonfeeds/v1/cne/rss/economy.xml"},
+    {id:"bt-home",    outlet:"bt",   section:"Latest",      url:"https://www.businesstoday.in/rssfeeds/?id=home"},
+    {id:"zee-econ",   outlet:"zee",  section:"Economy",     url:"https://www.zeebiz.com/india-economy.xml"},
+    {id:"print-econ", outlet:"print",section:"Economy",     url:"https://theprint.in/category/economy/feed/"},
+    {id:"me-blog",    outlet:"me",   section:"Blog",        url:"https://mostlyeconomics.wordpress.com/feed/"},
+    {id:"te-india",   outlet:"te",   section:"India",       url:"https://tradingeconomics.com/india/rss"},
+    {id:"hindu-biz",  outlet:"hindu",section:"Business",    url:"https://www.thehindu.com/business/feeder/default.rss"},
+    {id:"hindu-mkt",  outlet:"hindu",section:"Markets",     url:"https://www.thehindu.com/business/markets/feeder/default.rss"},
+    {id:"hindu-econ", outlet:"hindu",section:"Economy",     url:"https://www.thehindu.com/business/Economy/feeder/default.rss"},
+    {id:"hindu-ind",  outlet:"hindu",section:"Industry",    url:"https://www.thehindu.com/business/Industry/feeder/default.rss"},
+    {id:"etb-latest", outlet:"etb",  section:"Latest",      url:"https://bfsi.economictimes.indiatimes.com/rss/recentstories"},
+    /* NSE exchange filings: shown only in the "NSE filings" tab */
+    {id:"nse-ann",    outlet:"nse",  section:"Announcement",     kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Online_announcements.xml"},
+    {id:"nse-results",outlet:"nse",  section:"Financial results", kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Financial_Results.xml"},
+    {id:"nse-board",  outlet:"nse",  section:"Board meeting",    kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Board_Meetings.xml"},
+    {id:"nse-ca",     outlet:"nse",  section:"Corporate action", kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Corporate_action.xml"},
+    {id:"nse-insider",outlet:"nse",  section:"Insider trading",  kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/InsiderTrading.xml"},
+    {id:"nse-offer",  outlet:"nse",  section:"Offer document",   kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Offer_Documents.xml"},
+    {id:"nse-circ",   outlet:"nse",  section:"Circular",         kind:"filing", url:"https://nsearchives.nseindia.com/content/RSS/Circulars.xml"},
+    /* BSE exchange filings: also shown only in the filings tab */
+    {id:"bse-ann",    outlet:"bse",  section:"Announcement",     kind:"filing", url:"https://www.bseindia.com/data/xml/announcements.aspx"},
+    {id:"bse-results",outlet:"bse",  section:"Financial results", kind:"filing", url:"https://www.bseindia.com/Data/XML/FinancialResultsFeed.aspx"},
+    {id:"bse-board",  outlet:"bse",  section:"Board meeting",    kind:"filing", url:"https://beta.bseindia.com/Data/XML/BoardMeetingsFeed.xml"},
+    {id:"bse-ca",     outlet:"bse",  section:"Corporate action", kind:"filing", url:"https://www.bseindia.com/data/XML/CorpActionFeed.aspx"},
+    {id:"bse-insider",outlet:"bse",  section:"Insider trading",  kind:"filing", url:"https://www.bseindia.com/Data/XML/InsiderTradingFeed.aspx"},
+    {id:"bse-notices",outlet:"bse",  section:"Notice",           kind:"filing", url:"https://www.bseindia.com/data/xml/notices.xml"},
+    /* BSE market commentary is news, so it stays in the main stream */
+    {id:"bse-sensex", outlet:"bse",  section:"Sensex view",      url:"https://www.bseindia.com/data/xml/sensexrss.xml"},
+    {id:"tb-news",    outlet:"tb",   section:"Stocks",      url:"https://tradebrains.in/feed/"},
+    {id:"ep-news",    outlet:"ep",   section:"Latest news", url:"https://www.equitypandit.com/category/latest-news/feed/"},
+    {id:"ai-blog",    outlet:"ai",   section:"Analysis",    url:"https://alphaideas.in/feed/"}
+  ];
+  var CONCURRENCY = 6;
+
+  var PROXIES = [
+    {name:"allorigins", type:"xml",  build:function(u){return "https://api.allorigins.win/raw?url="+encodeURIComponent(u);}},
+    {name:"corsproxy",  type:"xml",  build:function(u){return "https://corsproxy.io/?url="+encodeURIComponent(u);}},
+    {name:"codetabs",   type:"xml",  build:function(u){return "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u);}},
+    {name:"rss2json",   type:"json", build:function(u){return "https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(u);}}
+  ];
+
+  var CATS = [
+    {id:"all",   label:"All"},
+    {id:"picks", label:"Stock picks", test:isPick},
+    {id:"filings", label:"Exchange filings", filingsOnly:true},
+    {id:"mkt",   label:"Markets",       re:/\b(sensex|nifty|stocks?|shares?|markets?|sebi|fii|fpi|dii|f&o|derivatives?|midcap|smallcap|rally|sell-?off)\b/i},
+    {id:"earn",  label:"Earnings",      re:/\b(q[1-4](fy\d+)?|results?|profit|pat|net income|revenue|earnings|ebitda|margin|dividend)\b/i},
+    {id:"ipo",   label:"IPOs",          re:/\b(ipo|listing|gmp|subscribed|subscription|anchor investors|drhp)\b/i},
+    {id:"bank",  label:"Banking & RBI", re:/\b(rbi|banks?|banking|nbfc|repo|lenders?|loans?|deposits?|npa|credit)\b/i},
+    {id:"econ",  label:"Economy",       re:/\b(gdp|inflation|cpi|wpi|rupee|fiscal|economy|economic|exports?|imports?|trade deficit|budget|gst|tax|current account)\b/i},
+    {id:"cmdty", label:"Commodities",   re:/\b(gold|silver|crude|oil|brent|commodit\w*|metals?|copper|aluminium)\b/i}
+  ];
+
+  /* ---------- Stock-pick detection ---------- */
+  var PICK_STRONG = /\b(target price|price target|top picks?|stocks? to (buy|watch|sell)|stock ideas?|stock picks?|trading ideas?|trading strateg\w*|stock recommendations?|recommend\w*|buy rating|sell rating|hold rating|initiates? coverage|upgrade[sd]?|downgrade[sd]?|outperform|underperform|overweight|underweight|technical picks?|buzzing stocks?|stocks? in focus)\b/i;
+  var PICK_ACTION_NEAR_TARGET = /\b(buy|sell|hold|accumulate|reduce|neutral|add)\b[^.]{0,60}\b(target|tp)\b|\b(target|tp)\b[^.]{0,60}\b(buy|sell|hold|accumulate|reduce)\b/i;
+  var PICK_RATED = /['"‘’“”](buy|sell|hold|add|reduce|accumulate|neutral)['"‘’“”]/i;
+  var PICK_ESTIMATES = /\b(raises?|cuts?|lowers?|trims?|hikes?|revises?)\b[^.]{0,25}\b(estimates?|targets?|ratings?|tp)\b/i;
+  var PICK_VERB = /\b(buy|sell|hold|accumulate|reduce|outperform|underperform)\b/i;
+  function isPick(hay){
+    if (PICK_STRONG.test(hay) || PICK_ACTION_NEAR_TARGET.test(hay) || PICK_RATED.test(hay)) return true;
+    var hasBroker = BROKERS.test(hay);
+    return hasBroker && (PICK_VERB.test(hay) || PICK_ESTIMATES.test(hay));
+  }
+
+  var ACTIONS = [
+    {re:/\b(strong buy|buy|accumulate|add|outperform|overweight|upgrade[sd]?)\b/i, cls:"bull"},
+    {re:/\b(sell|reduce|underperform|underweight|downgrade[sd]?)\b/i, cls:"bear"},
+    {re:/\b(hold|neutral|equal-?weight|market-?perform)\b/i, cls:"neu"}
+  ];
+  var BROKERS = /\b(Motilal Oswal|MOFSL|Jefferies|Morgan Stanley|Goldman Sachs|CLSA|Nomura|Kotak Institutional Equities|Kotak Securities|ICICI Securities|HDFC Securities|Axis Securities|JM Financial|Nuvama|Emkay|Prabhudas Lilladher|Anand Rathi|Mirae Asset Sharekhan|Sharekhan|Choice Broking|Choice Institutional Equities|Geojit|SBI Securities|Bernstein|Citi(group)?|Macquarie|UBS|BofA( Securities)?|Bank of America|HSBC|Elara Securities|Elara|Systematix|Antique Stock Broking|Centrum|Ventura Securities|IIFL( Securities)?|Religare Broking|Bonanza|InCred Equities|PhillipCapital|Phillip Capital|Investec|JPMorgan|JP Morgan|Dolat Capital|Yes Securities|Equirus|Ashika|Arihant Capital|StoxBox|Bajaj Broking)\b/i;
+  var TARGET = [
+    /\b(?:target(?: price)?|tp|price target)\b(?:\s+(?:of|at|to|is|:))?\s*(?:rs\.?|₹|inr)?\s*([\d,]{2,}(?:\.\d+)?)/i,
+    /(?:rs\.?|₹|inr)\s*([\d,]{2,}(?:\.\d+)?)\s*(?:target|tp)\b/i
+  ];
+  function extractCall(title, desc){
+    var call = {action:"", cls:"none", target:"", broker:""};
+    var srcs = [title, desc];
+    for (var s=0;s<srcs.length && !call.action;s++){
+      var best = null;
+      ACTIONS.forEach(function(a){
+        var m = a.re.exec(srcs[s]||"");
+        if (m && (!best || m.index < best.idx)) best = {idx:m.index, word:m[1], cls:a.cls};
+      });
+      if (best){
+        var w = best.word.replace(/^upgrade[sd]?$/i,"Upgrade").replace(/^downgrade[sd]?$/i,"Downgrade");
+        call.action = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        call.cls = best.cls;
+      }
+    }
+    for (var t=0;t<srcs.length && !call.target;t++){
+      for (var r=0;r<TARGET.length;r++){
+        var m2 = TARGET[r].exec(srcs[t]||"");
+        if (m2){ var v = parseFloat(m2[1].replace(/,/g,"")); if (v >= 1) { call.target = v.toLocaleString("en-IN",{maximumFractionDigits:2}); break; } }
+      }
+    }
+    var b = BROKERS.exec(title) || BROKERS.exec(desc||"");
+    if (b) call.broker = b[1];
+    return call;
+  }
+
+  var FEED_TIMEOUT = 12000;
+
+  /* ---------- State ---------- */
+  var state = {
+    items: [],
+    status: {},          // feedId -> {s:'load'|'ok'|'err', n, via, err}
+    outletOn: {},        // outlet -> bool
+    cat: "all",
+    q: "",
+    loading: false,
+    lastLoad: null,
+    goodProxy: null
+  };
+  Object.keys(OUTLETS).forEach(function(k){ state.outletOn[k] = true; });
+
+  function store(k, v){ try{ localStorage.setItem("dsw:"+k, JSON.stringify(v)); }catch(e){} }
+  function recall(k){ try{ var v = localStorage.getItem("dsw:"+k); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
+  var saved = recall("outlets"); if (saved) Object.keys(saved).forEach(function(k){ if (k in state.outletOn) state.outletOn[k] = !!saved[k]; });
+  var savedCat = recall("cat"); if (savedCat && CATS.some(function(c){return c.id===savedCat;})) state.cat = savedCat;
+  state.goodProxy = recall("proxy");
+  // How many stories to draw at once; "Show more" adds another page
+  var PAGE = 300;
+  state.limit = PAGE;
+  // Compact (headlines only) is the default; detailed adds summaries, tags and images
+  state.view = recall("view") === "detailed" ? "detailed" : "compact";
+
+  var ICON_REFRESH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>';
+  var ICON_CHEVRON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  function setRefreshButton(loading){
+    var b = document.getElementById("refresh");
+    b.disabled = loading;
+    b.innerHTML = loading ? '<span class="spin" aria-hidden="true"></span><span class="lbl">Loading</span>' : ICON_REFRESH + '<span class="lbl">Refresh</span>';
+    b.setAttribute("aria-label", loading ? "Loading news" : "Refresh");
+  }
+
+  /* ---------- Helpers ---------- */
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, attrs, kids){
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function(k){
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "style") n.setAttribute("style", attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    });
+    (kids||[]).forEach(function(c){ if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function stripHtml(s){
+    if (!s) return "";
+    try { return (new DOMParser().parseFromString(s, "text/html").body.textContent || "").replace(/\s+/g," ").trim(); }
+    catch(e){ return String(s).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim(); }
+  }
+  var istTime = new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit",hour12:false});
+  var istClock = new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+  var istDayKey = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"});
+  var istDayLabel = new Intl.DateTimeFormat("en-IN",{timeZone:"Asia/Kolkata",weekday:"long",day:"numeric",month:"short"});
+  function ago(d){
+    var s = Math.round((Date.now()-d)/1000);
+    if (s < 60) return "just now";
+    var m = Math.round(s/60); if (m < 60) return m+" min ago";
+    var h = Math.round(m/60); if (h < 24) return h+" hr ago";
+    var dd = Math.round(h/24); return dd+(dd===1?" day ago":" days ago");
+  }
+  function parseDate(s){
+    if (!s) return null;
+    s = String(s).trim();
+    // NSE format: "17-Oct-2026 00:41:51", in IST
+    var nse = /^(\d{1,2})-([A-Za-z]{3})-(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
+    if (nse){
+      var mi = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(nse[2].toLowerCase());
+      if (mi >= 0){
+        var iso = nse[3]+"-"+String(mi+1).padStart(2,"0")+"-"+nse[1].padStart(2,"0")+"T"+nse[4]+":"+nse[5]+":"+(nse[6]||"00")+"+05:30";
+        var dn = new Date(iso);
+        if (!isNaN(dn)) return dn;
+      }
+    }
+    // BSE-style "17/10/2026 14:30:05" or "17-10-2026 2:30:05 PM" (day first), in IST
+    var dmy = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AP]M)?)?$/i.exec(s);
+    if (dmy){
+      var hh = parseInt(dmy[4]||"0",10);
+      if (dmy[7]){ var pm = /pm/i.test(dmy[7]); if (pm && hh < 12) hh += 12; if (!pm && hh === 12) hh = 0; }
+      var iso2 = dmy[3]+"-"+dmy[2].padStart(2,"0")+"-"+dmy[1].padStart(2,"0")+"T"+String(hh).padStart(2,"0")+":"+(dmy[5]||"00")+":"+(dmy[6]||"00")+"+05:30";
+      var dd2 = new Date(iso2);
+      if (!isNaN(dd2)) return dd2;
+    }
+    var d = new Date(s);
+    if (isNaN(d) && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)) d = new Date(s.replace(" ","T")+"Z"); // rss2json UTC
+    return isNaN(d) ? null : d;
+  }
+  function childText(node, names){
+    for (var i=0;i<node.children.length;i++){
+      var c = node.children[i];
+      if (names.indexOf(c.localName) !== -1 && c.textContent.trim()) return c.textContent.trim();
+    }
+    return "";
+  }
+
+  /* ---------- Fetching ---------- */
+  function fetchT(url){
+    var ctl = ("AbortController" in window) ? new AbortController() : null;
+    var t = setTimeout(function(){ if (ctl) ctl.abort(); }, FEED_TIMEOUT);
+    return fetch(url, ctl ? {signal:ctl.signal} : {}).then(function(r){
+      clearTimeout(t);
+      if (!r.ok) throw new Error("HTTP "+r.status);
+      return r.text();
+    }, function(e){ clearTimeout(t); throw e; });
+  }
+
+  function parseXml(text, feed){
+    var doc = new DOMParser().parseFromString(text, "text/xml");
+    if (doc.getElementsByTagName("parsererror").length) throw new Error("Not a valid feed");
+    var nodes = doc.getElementsByTagName("item");
+    if (!nodes.length) nodes = doc.getElementsByTagName("entry");
+    if (!nodes.length) throw new Error("Feed has no items");
+    var out = [];
+    for (var i=0;i<nodes.length;i++){
+      var n = nodes[i];
+      var link = childText(n, ["link"]);
+      if (!link){
+        for (var j=0;j<n.children.length;j++){ var c=n.children[j]; if (c.localName==="link" && c.getAttribute("href")){ link=c.getAttribute("href"); break; } }
+      }
+      var img = "";
+      for (var k=0;k<n.children.length;k++){
+        var ch = n.children[k], ln = ch.localName, u = ch.getAttribute("url");
+        if (u && (ln==="content" || ln==="thumbnail")){ img = u; break; }
+        if (ln==="enclosure" && u && /image/.test(ch.getAttribute("type")||"image")){ img = u; break; }
+      }
+      out.push(mkItem(feed, {
+        title: childText(n, ["title"]),
+        link: link,
+        date: childText(n, ["pubDate","published","updated","date"]),
+        desc: childText(n, ["description","summary","content"]),
+        img: img
+      }));
+    }
+    return out;
+  }
+
+  function parseJson(text, feed){
+    var j = JSON.parse(text);
+    if (j.status !== "ok" || !j.items) throw new Error(j.message || "Proxy returned no items");
+    return j.items.map(function(it){
+      return mkItem(feed, {title:it.title, link:it.link, date:it.pubDate, desc:it.description,
+        img: it.thumbnail || (it.enclosure && it.enclosure.link) || ""});
+    });
+  }
+
+  function mkItem(feed, r){
+    var title = stripHtml(r.title);
+    var desc = stripHtml(r.desc);
+    if (desc.length > 320) desc = desc.slice(0, 317).replace(/\s+\S*$/,"")+"…";
+    if (desc === title) desc = "";
+    var hay = title+" "+desc;
+    if (feed.kind === "filing"){
+      return {
+        feed: feed.id, outlet: feed.outlet, section: feed.section, filing: true,
+        title: title, link: (r.link||"").trim(), desc: desc,
+        date: parseDate(r.date), img: "", tags: ["filings"], call: null
+      };
+    }
+    var tags = CATS.filter(function(c){ return c.test ? c.test(hay) : (c.re && c.re.test(hay)); }).map(function(c){ return c.id; });
+    if (feed.picks && tags.indexOf("picks") === -1) tags.unshift("picks");
+    return {
+      feed: feed.id, outlet: feed.outlet, section: feed.section,
+      title: title, link: (r.link||"").trim(), desc: desc,
+      date: parseDate(r.date), img: /^https?:/.test(r.img||"") ? r.img : "",
+      tags: tags,
+      call: tags.indexOf("picks") !== -1 ? extractCall(title, desc) : null
+    };
+  }
+
+  function proxyOrder(){
+    if (!state.goodProxy) return PROXIES.slice();
+    var p = PROXIES.filter(function(x){ return x.name===state.goodProxy; });
+    return p.concat(PROXIES.filter(function(x){ return x.name!==state.goodProxy; }));
+  }
+
+  function loadFeed(feed){
+    var order = proxyOrder(), i = 0, lastErr = null;
+    function attempt(){
+      if (i >= order.length) return Promise.reject(lastErr || new Error("All proxies failed"));
+      var p = order[i++];
+      return fetchT(p.build(feed.url)).then(function(text){
+        var items = p.type === "json" ? parseJson(text, feed) : parseXml(text, feed);
+        return {items:items, via:p.name};
+      }).catch(function(e){ lastErr = e; return attempt(); });
+    }
+    return attempt();
+  }
+
+  /* ---------- Server snapshot (GitHub Actions writes data/feeds.json every 15 min) ---------- */
+  var SNAPSHOT_URL = "data/feeds.json";
+  function loadSnapshot(){
+    if (location.protocol === "file:") return Promise.resolve(null);
+    return fetchT(SNAPSHOT_URL + "?t=" + Date.now()).then(function(text){
+      var j = JSON.parse(text);
+      return (j && j.feeds) ? j : null;
+    }).catch(function(){ return null; });
+  }
+  function applySnapshot(snap){
+    var collected = [];
+    FEEDS.forEach(function(f){
+      var s = snap.feeds[f.id];
+      if (s && s.ok && s.items && s.items.length){
+        var items = s.items.map(function(r){ return mkItem(f, {title:r.t, link:r.l, date:r.d, desc:r.s, img:r.i}); });
+        state.status[f.id] = {s:"ok", n:items.length, via:"server"};
+        collected = collected.concat(items);
+      } else if (s && /^Feed is valid/.test(s.error || "")){
+        state.status[f.id] = {s:"ok", n:0, via:"server"};  // working feed, nothing published right now
+      } else {
+        state.status[f.id] = {s:"err", n:0, err: s ? (s.error || "Feed returned no items") : "Not fetched by the server yet"};
+      }
+    });
+    state.snapshotAt = parseDate(snap.generated);
+    return collected;
+  }
+
+  function loadAll(){
+    if (state.loading) return;
+    state.loading = true;
+    var btn = $("refresh");
+    setRefreshButton(true);
+    FEEDS.forEach(function(f){ state.status[f.id] = {s:"load", n:(state.status[f.id]||{}).n||0}; });
+    renderHealth();
+    if (!state.items.length) renderSkeleton();
+
+    loadSnapshot().then(function(snap){
+      if (snap){ finishLoad(applySnapshot(snap), {}); }
+      else { state.snapshotAt = null; loadViaProxies(); }
+    });
+  }
+
+  function finishLoad(collected, viaCount){
+    var btn = $("refresh");
+    // Keep previous items if every feed failed (e.g. offline)
+    if (collected.length) state.items = dedupe(collected);
+    var best = Object.keys(viaCount).sort(function(a,b){ return viaCount[b]-viaCount[a]; })[0];
+    if (best){ state.goodProxy = best; store("proxy", best); }
+    state.lastLoad = new Date();
+    state.loading = false;
+    setRefreshButton(false);
+    render();
+  }
+
+  function loadViaProxies(){
+    var collected = [], viaCount = {};
+    // Run at most CONCURRENCY feeds at once so free proxies don't rate-limit us
+    var queue = FEEDS.slice(), running = [];
+    function worker(){
+      var f = queue.shift();
+      if (!f) return Promise.resolve();
+      return runOne(f).then(worker);
+    }
+    for (var w=0; w<Math.min(CONCURRENCY, queue.length); w++) running.push(worker());
+    var jobs = running;
+    function runOne(f){
+      return loadFeed(f).then(function(res){
+        state.status[f.id] = {s:"ok", n:res.items.length, via:res.via};
+        viaCount[res.via] = (viaCount[res.via]||0)+1;
+        collected = collected.concat(res.items);
+        renderHealth();
+      }, function(err){
+        state.status[f.id] = {s:"err", n:0, err:(err && err.name==="AbortError") ? "Timed out" : (err && err.message) || "Failed"};
+        renderHealth();
+      });
+    }
+
+    Promise.all(jobs).then(function(){ finishLoad(collected, viaCount); });
+  }
+
+  function dedupe(list){
+    var seen = {}, out = [];
+    list.sort(function(a,b){ return (b.date||0) - (a.date||0); });
+    list.forEach(function(it){
+      if (!it.title || !it.link || /^(undefined|null)$/i.test(it.title)) return;
+      var k1 = it.link.replace(/[?#].*$/,"").replace(/\/$/,"").toLowerCase() + (it.filing ? "|"+it.desc : "");
+      var k2 = it.outlet+"|"+it.title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim() + (it.filing ? "|"+it.desc+"|"+(it.date||"") : "");
+      if (seen[k1] || seen[k2]) return;
+      seen[k1] = seen[k2] = 1;
+      out.push(it);
+    });
+    return out;
+  }
+
+  /* ---------- Rendering ---------- */
+  function visible(){
+    var q = state.q.toLowerCase().trim();
+    var terms = q ? q.split(/\s+/) : [];
+    var filingsView = state.cat === "filings";
+    return state.items.filter(function(it){
+      if (!state.outletOn[it.outlet]) return false;
+      if (!!it.filing !== filingsView) return false;
+      if (state.cat !== "all" && it.tags.indexOf(state.cat) === -1) return false;
+      if (terms.length){
+        var hay = (it.title+" "+it.desc+" "+OUTLETS[it.outlet].name).toLowerCase();
+        for (var i=0;i<terms.length;i++) if (hay.indexOf(terms[i]) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  // Tabs always on screen; every other category sits under "More"
+  var PRIMARY_TABS = ["all", "picks", "mkt", "earn"];
+
+  function setCategory(id){
+    state.cat = id; state.limit = PAGE; store("cat", id);
+    closeMenu(false); render();
+    window.scrollTo({top:0});
+  }
+
+  function renderTabs(){
+    var base = state.items.filter(function(it){ return state.outletOn[it.outlet]; });
+    var news = base.filter(function(it){ return !it.filing; });
+    function count(c){
+      var pool = c.filingsOnly ? base : news;
+      return c.id==="all" ? news.length : pool.filter(function(it){ return it.tags.indexOf(c.id)!==-1; }).length;
+    }
+    var have = state.items.length > 0;
+    var box = $("tabs"); box.textContent = "";
+    CATS.filter(function(c){ return PRIMARY_TABS.indexOf(c.id) !== -1; }).forEach(function(c){
+      var b = el("button",{type:"button","class":"tab","aria-pressed":String(state.cat===c.id)},[c.label, have ? el("em",{text:String(count(c))}) : null]);
+      b.addEventListener("click", function(){ setCategory(c.id); });
+      box.appendChild(b);
+    });
+
+    // "More": shows the chosen category's name when one from the menu is selected
+    var extra = CATS.filter(function(c){ return PRIMARY_TABS.indexOf(c.id) === -1; });
+    var activeExtra = extra.filter(function(c){ return c.id === state.cat; })[0];
+    var more = el("button",{type:"button","class":"tab more",id:"moreBtn","aria-haspopup":"menu","aria-controls":"moreMenu",
+      "aria-expanded":String(!$("moreMenu").hidden),"aria-pressed":String(!!activeExtra)}, [activeExtra ? activeExtra.label : "More"]);
+    more.insertAdjacentHTML("beforeend", ICON_CHEVRON);
+    more.addEventListener("click", function(e){ e.stopPropagation(); $("moreMenu").hidden ? openMenu(more) : closeMenu(true); });
+    $("moreSlot").textContent = "";
+    $("moreSlot").appendChild(more);  // outside the scrolling tab row, so it is always visible
+
+    var menu = $("moreMenu"); menu.textContent = "";
+    extra.forEach(function(c){
+      var item = el("button",{type:"button",role:"menuitemradio","aria-checked":String(state.cat===c.id)},[c.label, el("em",{text: have ? String(count(c)) : ""})]);
+      item.addEventListener("click", function(){ setCategory(c.id); });
+      menu.appendChild(item);
+    });
+  }
+
+  function openMenu(btn){
+    var menu = $("moreMenu");
+    menu.hidden = false;
+    var r = btn.getBoundingClientRect();
+    var w = menu.offsetWidth;
+    menu.style.top = Math.round(r.bottom + 6) + "px";
+    menu.style.left = Math.round(Math.max(12, Math.min(r.left, window.innerWidth - w - 12))) + "px";
+    btn.setAttribute("aria-expanded","true");
+    state.menuAt = {y: window.scrollY, x: $("tabs").scrollLeft};
+    var first = menu.querySelector('[aria-checked="true"]') || menu.querySelector("button");
+    if (first) first.focus({preventScroll:true});
+  }
+  function closeMenu(returnFocus){
+    var menu = $("moreMenu");
+    if (menu.hidden) return;
+    menu.hidden = true;
+    var btn = $("moreBtn");
+    if (btn){ btn.setAttribute("aria-expanded","false"); if (returnFocus) btn.focus(); }
+  }
+
+  function renderOutlets(){
+    var box = $("outlets"); box.textContent = "";
+    Object.keys(OUTLETS).forEach(function(k){
+      var o = OUTLETS[k];
+      var n = state.items.filter(function(it){ return it.outlet===k; }).length;
+      var b = el("button",{type:"button","class":"outlet","aria-pressed":String(state.outletOn[k]),style:"--c:var("+o.color+")",title:"Show or hide "+o.name},
+        [el("span",{"class":"sw"}), o.name, el("span",{"class":"n",text:state.items.length?String(n):""})]);
+      b.addEventListener("click", function(){ state.outletOn[k] = !state.outletOn[k]; state.limit = PAGE; store("outlets", state.outletOn); render(); });
+      box.appendChild(b);
+    });
+    // Remind the reader on the Sources button when outlets are hidden
+    var off = Object.keys(OUTLETS).filter(function(k){ return !state.outletOn[k]; }).length;
+    $("sfilter").hidden = off === 0;
+    $("sfilter").textContent = off + " hidden";
+    $("allOutlets").hidden = off === 0;
+  }
+
+  function renderHealth(){
+    var box = $("health"); box.textContent = "";
+    var live = 0;
+    FEEDS.forEach(function(f){
+      var st = state.status[f.id] || {s:"load"};
+      if (st.s === "ok") live++;
+      var meta = st.s==="ok" ? st.n+" items" : st.s==="err" ? "failed" : "loading";
+      box.appendChild(el("li",{title: st.s==="err" ? (OUTLETS[f.outlet].name+" "+f.section+": "+st.err+"\n"+f.url) : f.url},[
+        el("span",{"class":"dot "+st.s}),
+        el("span",{"class":"lbl",text:OUTLETS[f.outlet].name+" · "+f.section}),
+        el("span",{"class":"meta",text:meta})
+      ]));
+    });
+    // Sources button: live feed count and a colored dot (amber if any feed failed)
+    var loading = FEEDS.some(function(f){ return (state.status[f.id]||{}).s === "load"; });
+    var failed = FEEDS.some(function(f){ return (state.status[f.id]||{}).s === "err"; });
+    $("sdot").className = "sdot" + (loading ? " load" : failed ? " warn" : "");
+    $("scount").textContent = loading ? "" : live+"/"+FEEDS.length;
+    $("via").textContent = state.snapshotAt
+      ? "Fetched by the server at "+istTime.format(state.snapshotAt)+" IST ("+ago(state.snapshotAt)+"). The server fetches every 15 minutes. Hover a failed feed to see why."
+      : state.goodProxy ? "Fetching through the "+state.goodProxy+" proxy. Hover a failed feed to see why." : "";
+  }
+
+  function renderSummary(){
+    var now = Date.now(), h = 0, d = 0;
+    var news = state.items.filter(function(it){ return !it.filing; });
+    news.forEach(function(it){
+      if (!it.date) return;
+      var age = now - it.date;
+      if (age <= 3600e3) h++;
+      if (age <= 86400e3) d++;
+    });
+    if (!state.items.length){ $("stats").textContent = state.loading ? "Loading news…" : ""; return; }
+    var fetched = state.snapshotAt || state.lastLoad;
+    var fmt = function(n){ return n.toLocaleString("en-IN"); };
+    var st = $("stats"); st.textContent = "";
+    [[fmt(news.length), " stories"], [fmt(h), " last hour"], [fmt(d), " in 24 h"]].forEach(function(p, i){
+      if (i) st.appendChild(document.createTextNode(" · "));
+      st.appendChild(el("b",{text:p[0]})); st.appendChild(document.createTextNode(p[1]));
+    });
+    // The fetch time is hidden on phones to keep this to one line; Sources shows it too
+    if (fetched) st.appendChild(el("span",{"class":"st-long",text:" · fetched " + istTime.format(fetched) + " IST"}));
+  }
+
+  function renderSkeleton(){
+    var s = $("stream"); s.textContent = "";
+    s.appendChild(el("div",{"class":"day",text:"Loading feeds"}));
+    var l = el("div",{"class":"list"});
+    for (var i=0;i<6;i++) l.appendChild(el("div",{"class":"skel"}));
+    s.appendChild(l);
+  }
+
+  function renderStream(){
+    var s = $("stream"); s.textContent = "";
+    if (!state.items.length && !state.loading){
+      s.appendChild(el("div",{"class":"empty"},[
+        el("strong",{text:"No feeds could be loaded"}),
+        "The free proxies may be down or rate-limiting, or you may be offline. Wait a minute and press Refresh."
+      ]));
+      return;
+    }
+    var list = visible();
+    var picksView = state.cat === "picks";
+    var compact = state.view === "compact";
+    s.className = "stream" + (compact ? " compact" : "");
+    if (picksView){
+      s.appendChild(el("div",{"class":"disclaimer"},[
+        el("strong",{text:"Not investment advice. "}),
+        "Analyst calls as reported in the news; rating, target and broker are read automatically and can be wrong. Check the article."
+      ]));
+    }
+    if (state.cat === "filings"){
+      s.appendChild(el("div",{"class":"disclaimer"},[
+        el("strong",{text:"Official NSE and BSE filings. "}),
+        "Links open the filing itself. Switch NSE or BSE off under Sources to see one exchange."
+      ]));
+    }
+    if (!list.length){
+      s.appendChild(el("div",{"class":"empty"},[
+        el("strong",{text:"No stories match"}),
+        "Try a different search, another category, or switch more outlets on."
+      ]));
+      return;
+    }
+    var todayKey = istDayKey.format(new Date());
+    var yKey = istDayKey.format(new Date(Date.now()-86400e3));
+    var curKey = null, box = null, now = Date.now();
+    list.slice(0, state.limit).forEach(function(it){
+      var key = it.date ? istDayKey.format(it.date) : "undated";
+      if (key !== curKey){
+        curKey = key;
+        var label = key==="undated" ? "Undated" : key===todayKey ? "Today" : key===yKey ? "Yesterday" : istDayLabel.format(it.date);
+        s.appendChild(el("div",{"class":"day",text:label}));
+        box = el("div",{"class":"list"}); s.appendChild(box);
+      }
+      var o = OUTLETS[it.outlet];
+      var callStrip = (picksView && it.call) ? el("div",{"class":"call"},[
+        el("span",{"class":"act "+it.call.cls,text: it.call.action || "Call"}),
+        it.call.target ? el("span",{"class":"tp"},["Target ", el("b",{text:"₹"+it.call.target})]) : null,
+        it.call.broker ? el("span",{"class":"broker"},["by ", el("b",{text:it.call.broker})]) : null
+      ]) : null;
+      if (compact){
+        var hint = o.name + " · " + it.section + (it.date ? " · " + ago(it.date) : "");
+        box.appendChild(el("article",{"class":"item" + (it.date && (now - it.date) < 3600e3 ? " fresh" : ""), title: hint},[
+          el("div",{"class":"time"},[
+            el("span",{"class":"hm",text: it.date ? istTime.format(it.date) : "--:--"}),
+            el("span",{"class":"src",style:"--c:var("+o.color+")",text:o.short || o.name})
+          ]),
+          el("div",{"class":"body"},[
+            el("a",{"class":"title",href:it.link,target:"_blank",rel:"noopener noreferrer",text:it.title}),
+            callStrip
+          ])
+        ]));
+        return;
+      }
+      var tags = it.tags.filter(function(t){ return t !== state.cat; }).slice(0,3).map(function(t){
+        var c = CATS.filter(function(x){ return x.id===t; })[0];
+        return el("span",{"class":"tag",text:c.label});
+      });
+      var fresh = it.date && (now - it.date) < 3600e3;
+      var row = el("article",{"class":"item"},[
+        el("div",{"class":"time"},[ it.date ? istTime.format(it.date) : "--:--", el("small",{text: it.date ? ago(it.date) : ""}) ]),
+        el("div",{"class":"body"+(fresh?" fresh":"")},[
+          el("div",{"class":"top"},[ el("span",{"class":"src",style:"--c:var("+o.color+")",text:o.name}), el("span",{"class":"sec",text:it.section}) ].concat(tags)),
+          el("a",{"class":"title",href:it.link,target:"_blank",rel:"noopener noreferrer",text:it.title}),
+          it.desc ? el("p",{"class":"snip",text:it.desc}) : null,
+          callStrip
+        ]),
+        it.img ? (function(){
+          var im = el("img",{"class":"thumb",src:it.img,alt:"",loading:"lazy",referrerpolicy:"no-referrer"});
+          im.addEventListener("error", function(){ im.remove(); });
+          return im;
+        })() : null
+      ]);
+      box.appendChild(row);
+    });
+    if (list.length > state.limit){
+      var left = list.length - state.limit;
+      var moreBtn = el("button",{type:"button","class":"btn"},["Show " + Math.min(PAGE, left) + " more (" + left.toLocaleString("en-IN") + " older)"]);
+      moreBtn.addEventListener("click", function(){
+        var y = window.scrollY;
+        state.limit += PAGE; renderStream();
+        window.scrollTo({top:y});
+      });
+      s.appendChild(el("div",{"class":"more-row"},[moreBtn]));
+    }
+  }
+
+  function render(){
+    renderOutlets(); renderTabs(); renderSummary(); renderHealth(); renderStream();
+  }
+
+  /* ---------- Clock, market status, auto-refresh ---------- */
+  function tick(){
+    var now = new Date();
+    $("clock").textContent = istClock.format(now)+" IST";
+    var parts = new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(now);
+    var get = function(t){ return (parts.filter(function(p){return p.type===t;})[0]||{}).value; };
+    var wd = get("weekday"), mins = parseInt(get("hour"),10)*60 + parseInt(get("minute"),10);
+    var open = wd!=="Sat" && wd!=="Sun" && mins >= 555 && mins < 930;
+    var pill = $("mkt");
+    pill.className = "pill "+(open?"open":"closed");
+    var pre = !open && mins >= 540 && mins < 555 && wd!=="Sat" && wd!=="Sun";
+    pill.querySelector(".pl-long").textContent = open ? "Market open" : pre ? "Pre-open" : "Market closed";
+    pill.querySelector(".pl-short").textContent = open ? "Open" : pre ? "Pre-open" : "Closed";
+    $("next").textContent = state.loading ? "Loading…" : state.lastLoad ? "Page last loaded at "+istTime.format(state.lastLoad)+" IST" : "";
+    // keep relative times fresh roughly every minute
+    if (now.getSeconds() === 0 && state.items.length) { renderSummary(); renderStream(); }
+  }
+
+  /* ---------- Sources drawer ---------- */
+  function openDrawer(){
+    $("drawer").hidden = false; $("scrim").hidden = false;
+    document.body.classList.add("drawer-open");
+    $("srcbtn").setAttribute("aria-expanded","true");
+    $("drawerClose").focus();
+  }
+  function closeDrawer(){
+    if ($("drawer").hidden) return;
+    $("drawer").hidden = true; $("scrim").hidden = true;
+    document.body.classList.remove("drawer-open");
+    $("srcbtn").setAttribute("aria-expanded","false");
+    $("srcbtn").focus();
+  }
+  $("srcbtn").addEventListener("click", openDrawer);
+  $("drawerClose").addEventListener("click", closeDrawer);
+  $("scrim").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", function(e){
+    if ($("drawer").hidden) return;
+    if (e.key === "Escape"){ closeDrawer(); return; }
+    if (e.key === "Tab"){  // keep keyboard focus inside the open drawer
+      var f = $("drawer").querySelectorAll('button:not([hidden]), a[href], input');
+      if (!f.length) return;
+      var first = f[0], last = f[f.length-1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  $("allOutlets").addEventListener("click", function(){
+    Object.keys(OUTLETS).forEach(function(k){ state.outletOn[k] = true; });
+    state.limit = PAGE; store("outlets", state.outletOn); render();
+    $("drawerClose").focus();  // the Show all link hides itself, so move focus somewhere visible
+  });
+
+  /* ---------- Wire up ---------- */
+  $("refresh").addEventListener("click", loadAll);
+  var qt;
+  $("q").addEventListener("input", function(e){ clearTimeout(qt); var v = e.target.value; qt = setTimeout(function(){ state.q = v; state.limit = PAGE; renderStream(); }, 120); });
+
+  // Search: hidden behind the magnifier button; stays open while it has text
+  function openSearch(){ $("searchRow").hidden = false; $("searchBtn").setAttribute("aria-expanded","true"); $("q").focus(); }
+  function closeSearch(){
+    $("searchRow").hidden = true; $("searchBtn").setAttribute("aria-expanded","false");
+    if ($("q").value){ $("q").value = ""; state.q = ""; state.limit = PAGE; renderStream(); }
+  }
+  $("searchBtn").addEventListener("click", function(){ $("searchRow").hidden ? openSearch() : closeSearch(); });
+  $("qClear").addEventListener("click", function(){ closeSearch(); $("searchBtn").focus(); });
+  $("q").addEventListener("keydown", function(e){ if (e.key === "Escape"){ e.preventDefault(); closeSearch(); $("searchBtn").focus(); } });
+
+  // Compact or detailed news rows, remembered per browser
+  function applyView(){
+    var detailed = state.view === "detailed";
+    var vb = $("viewBtn");
+    vb.setAttribute("aria-pressed", String(detailed));
+    vb.setAttribute("aria-label", detailed ? "Show headlines only" : "Show summaries and images");
+    vb.title = detailed ? "Show headlines only" : "Show summaries and images";
+  }
+  $("viewBtn").addEventListener("click", function(){
+    state.view = state.view === "compact" ? "detailed" : "compact";
+    store("view", state.view); applyView(); renderStream();
+  });
+
+  // More menu: close on Esc, a tap elsewhere, scrolling or resizing
+  document.addEventListener("click", function(e){
+    if (!$("moreMenu").hidden && !$("moreMenu").contains(e.target)) closeMenu(false);
+  });
+  $("moreMenu").addEventListener("keydown", function(e){
+    var items = Array.prototype.slice.call($("moreMenu").querySelectorAll("button"));
+    var i = items.indexOf(document.activeElement);
+    if (e.key === "Escape"){ e.preventDefault(); closeMenu(true); }
+    else if (e.key === "ArrowDown"){ e.preventDefault(); items[(i+1) % items.length].focus(); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); items[(i-1+items.length) % items.length].focus(); }
+    else if (e.key === "Tab"){ closeMenu(false); }
+  });
+  window.addEventListener("resize", function(){ closeMenu(false); });
+  // Close on a real scroll only, not the small nudge a tap or focus can cause
+  function closeIfScrolled(){
+    var at = state.menuAt;
+    if ($("moreMenu").hidden || !at) return;
+    if (Math.abs(window.scrollY - at.y) > 40 || Math.abs($("tabs").scrollLeft - at.x) > 40) closeMenu(false);
+  }
+  $("tabs").addEventListener("scroll", closeIfScrolled, {passive:true});
+  window.addEventListener("scroll", closeIfScrolled, {passive:true});
+
+  setRefreshButton(false);
+  applyView();
+
+  render();
+  tick(); setInterval(tick, 1000);
+  loadAll();
+})();
+</script>
+</body>
+</html>

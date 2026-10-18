@@ -4,171 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Global Affairs Wire</title>
-<meta name="description" content="Live world geopolitics headlines from major international outlets, sorted by time and tagged by region.">
+<meta name="description" content="World, India and Indian markets headlines from major outlets in one compact live feed, tagged by region and topic.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-/* Layout: atlas-style wire — masthead with world clocks, stat band, two-column (feed | sidebar), single column on phones */
-:root{
-  --bg:#e9eef1; --panel:#f7f9fa; --ink:#15212b; --muted:#5b6a76; --line:#c9d3da;
-  --accent:#c2410c; --accent-soft:#fbe3d6; --fresh:#0f766e; --warn:#b45309; --bad:#b91c1c;
-  --display:"Archivo","Arial Narrow",Arial,sans-serif;
-  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0e1519; --panel:#152027; --ink:#e3eaee; --muted:#8fa0ab; --line:#26343d;
-  --accent:#f97316; --accent-soft:#3a2214; --fresh:#2dd4bf; --warn:#fbbf24; --bad:#f87171; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0e1519; --panel:#152027; --ink:#e3eaee; --muted:#8fa0ab; --line:#26343d;
-  --accent:#f97316; --accent-soft:#3a2214; --fresh:#2dd4bf; --warn:#fbbf24; --bad:#f87171; color-scheme:dark}
-*{box-sizing:border-box}
-html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
-a{color:inherit}
-button,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-
-/* Masthead */
-header.mast{border-bottom:3px solid var(--ink)}
-.mast .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-block:22px 14px}
-.brand h1{margin:0;font:900 clamp(30px,6vw,54px)/.9 var(--display);font-stretch:118%;letter-spacing:-.01em;text-transform:uppercase}
-.brand h1 span{color:var(--accent)}
-.brand p{margin:6px 0 0;color:var(--muted);font:500 12px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase}
-.mast-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.live{display:inline-flex;align-items:center;gap:7px;font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-.live.on .dot{background:var(--fresh);box-shadow:0 0 0 0 var(--fresh);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--fresh) 60%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
-.btn{border:1.5px solid var(--ink);background:transparent;padding:7px 14px;font:600 13px var(--body);cursor:pointer;border-radius:2px}
-.btn:hover{background:var(--ink);color:var(--bg)}
-.btn[disabled]{opacity:.5;cursor:wait}
-
-/* Clock strip */
-.clocks{border-bottom:1px solid var(--line);background:var(--panel)}
-.stats{border-top:2px solid var(--ink)}
-.clocks .wrap{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
-.clock{flex:1 0 auto;padding:8px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:96px}
-.clock:first-child{padding-left:0}
-.clock b{font:600 10px var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-.clock time{font:500 16px var(--mono);font-variant-numeric:tabular-nums}
-
-/* Stats */
-.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding-block:0}
-.stat{padding:14px 14px 14px 0;border-right:1px solid var(--line)}
-.stat+.stat{padding-left:14px}
-.stat:last-child{border-right:0}
-.stat strong{display:block;font:800 30px/1 var(--display);font-stretch:90%;font-variant-numeric:tabular-nums}
-.stat span{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.stats{border-bottom:1px solid var(--line)}
-
-/* Controls */
-.controls{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.controls .wrap{display:flex;flex-direction:column;gap:10px;padding-block:12px}
-.search{display:flex;gap:8px}
-.search input{flex:1;min-width:0;padding:9px 12px;border:1.5px solid var(--line);background:var(--panel);border-radius:2px}
-.search input:focus{border-color:var(--ink);outline:none}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
-.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);padding:4px 10px;border-radius:2px;font:500 12px var(--body);cursor:pointer;white-space:nowrap}
-.chip small{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chip[aria-pressed="true"] small{color:inherit;opacity:.75}
-
-/* Edition tabs */
-.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:2px}
-.tab{background:none;border:0;padding:4px 0 8px;cursor:pointer;font:800 20px/1 var(--display);font-stretch:110%;text-transform:uppercase;letter-spacing:.01em;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
-.tab small{font:500 12px var(--mono);letter-spacing:0;margin-left:4px;vertical-align:2px}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-.tab:hover{color:var(--ink)}
-.outlet-group{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 0 4px}
-.outlet-group:first-child{padding-top:0}
-
-/* Commodity strip */
-.ticker{display:flex;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);background:var(--panel);border-radius:2px}
-.tk{flex:0 0 auto;display:grid;grid-template-columns:auto auto;align-items:baseline;column-gap:10px;row-gap:1px;padding:6px 12px 5px;border-right:1px solid var(--line)}
-.tk:last-child{border-right:0}
-.tk .n{grid-column:1/3;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.tk .n small{font-size:9px;letter-spacing:.04em;opacity:.8;text-transform:none}
-.tk.in .n{color:var(--accent)}
-.tk .p{font:600 15px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tk .c{font:500 12px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tk .s{grid-column:1/3;display:block;height:14px}
-.tk .s svg{display:block;width:100%;height:14px}
-.tk.meta{align-content:center}
-.up{color:var(--fresh)}.dn{color:var(--bad)}.flat{color:var(--muted)}
-
-/* Main grid */
-main .wrap{padding-block:20px 48px}
-.feed{min-width:0}
-.day{font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:18px 0 6px;border-bottom:1px solid var(--ink)}
-.day:first-child{padding-top:0}
-.story{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
-.story time{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);padding-top:3px}
-.story.fresh time{color:var(--accent);font-weight:600}
-.story h3{margin:0;font:700 18px/1.28 var(--display);font-stretch:96%;text-wrap:balance}
-.story h3 a{text-decoration:none}
-.story h3 a:hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
-.story p{margin:5px 0 0;color:var(--muted);font-size:14px;max-width:68ch}
-.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font:500 11px var(--mono);letter-spacing:.04em;text-transform:uppercase}
-.src{color:var(--ink);font-weight:600}
-.tag{padding:1px 6px;border:1px solid var(--line);border-radius:2px;color:var(--muted)}
-.tag.topic{border-style:dashed}
-.new{background:var(--accent);color:#fff;padding:1px 6px;border-radius:2px}
-.also{color:var(--muted);text-transform:none;letter-spacing:0;font-family:var(--body)}
-.empty{padding:40px 0;color:var(--muted)}
-.more{margin:20px 0 0}
-
-/* Sidebar */
-.drawer-body h2{margin:0 0 10px;font:800 13px var(--display);font-stretch:110%;letter-spacing:.08em;text-transform:uppercase;padding-bottom:6px;border-bottom:2px solid var(--ink)}
-.bars{display:flex;flex-direction:column;gap:7px}
-.bar{display:grid;grid-template-columns:110px minmax(0,1fr) 32px;gap:8px;align-items:center;font-size:13px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
-.bar i{display:block;height:8px;background:var(--line);position:relative}
-.bar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w,0%);background:var(--accent)}
-.bar b{font:500 12px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
-.outlets{display:flex;flex-direction:column}
-.outlet{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
-.outlet input{accent-color:var(--accent);margin:0}
-.health{width:9px;height:9px;border-radius:50%;background:var(--line)}
-.health.ok{background:var(--fresh)}.health.slow{background:var(--warn)}.health.fail{background:var(--bad)}
-.outlet small{font:500 11px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
-.note{font-size:13px;color:var(--muted);margin:0}
-.toggle{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px}
-.toggle input{accent-color:var(--accent)}
-footer{border-top:1px solid var(--line);padding-block:18px;color:var(--muted);font-size:12px}
-
-@media (max-width:560px){
-  .controls{position:static}
-  .tk{padding:5px 10px 4px}
-  .tk .p{font-size:14px}
-  .stats .wrap{grid-template-columns:repeat(2,1fr)}
-  .stat:nth-child(2){border-right:0}
-  .stat:nth-child(3){padding-left:0}
-  .stat:nth-child(n+3){border-top:1px solid var(--line)}
-  .story{grid-template-columns:48px minmax(0,1fr);gap:10px}
-  .story h3{font-size:16.5px}
-  .bar{grid-template-columns:96px minmax(0,1fr) 28px}
-}
-/* Sources drawer: hotspots, outlets & feed health, auto-refresh */
-.src-btn{display:inline-flex;align-items:center;gap:8px}
-.src-btn b{font:500 12px var(--mono);font-variant-numeric:tabular-nums}
-.src-btn .dot{width:7px;height:7px}
-.src-btn.ok .dot{background:var(--fresh)}.src-btn.warn .dot{background:var(--warn)}.src-btn.bad .dot{background:var(--bad)}
-.stat.clickable{cursor:pointer}
-.stat.clickable span{text-decoration:underline dotted;text-underline-offset:3px}
-.scrim{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);opacity:0;pointer-events:none;transition:opacity .2s ease}
-.drawer{position:fixed;top:0;right:0;bottom:0;z-index:21;width:min(400px,100%);display:flex;flex-direction:column;background:var(--panel);border-left:2px solid var(--ink);transform:translateX(100%);transition:transform .25s ease;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
-body.drawer-open{overflow:hidden}
-body.drawer-open .scrim{opacity:1;pointer-events:auto}
-body.drawer-open .drawer{transform:none}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:2px solid var(--ink)}
-.drawer-head h2{margin:0;font:900 20px var(--display);font-stretch:112%;text-transform:uppercase;letter-spacing:.01em}
-.drawer-close{border:0;background:none;font:400 26px/1 var(--body);cursor:pointer;padding:4px 8px;color:var(--ink)}
-.drawer-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:28px;overscroll-behavior:contain}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/wire.css">
+<script>/* apply a saved light/dark choice before first paint */try{var t=JSON.parse(localStorage.getItem("gaw:theme"));if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
 
@@ -176,78 +17,83 @@ body.drawer-open .drawer{transform:none}
   <div class="wrap">
     <div class="brand">
       <h1>Global Affairs <span>Wire</span></h1>
-      <p>World &amp; India affairs · live from <span id="feedTotal">16</span> outlets</p>
+      <small>World · India · Markets</small>
     </div>
-    <div class="mast-right">
-      <span class="live" id="liveState"><span class="dot"></span><span id="liveText">Connecting</span></span>
-      <button class="btn src-btn" id="srcBtn" type="button" aria-haspopup="dialog" aria-controls="drawer"><span class="dot"></span>Sources <b id="srcBadge">–</b></button>
-      <button class="btn" id="refreshBtn" type="button">Refresh</button>
-      <button class="btn" id="themeBtn" type="button" aria-label="Toggle dark mode">◐</button>
-    </div>
+    <nav class="editions" aria-label="Editions">
+      <button class="ed" type="button" data-ed="world" id="tab-world">World</button>
+      <button class="ed" type="button" data-ed="india" id="tab-india">India</button>
+      <a class="ed" href="dalal-street/">Dalal Street</a>
+    </nav>
+    <span class="status" id="liveState" title="When the news on this page was last collected"><span class="sd"></span><span class="st-txt" id="liveText">Connecting</span></span>
+    <button id="srcBtn" class="btn srcbtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="drawer" title="Sources: hotspots, outlets, feed health, world clocks">
+      <span id="sdot" class="sdot load" aria-hidden="true"></span><span class="lbl">Sources</span><span id="srcBadge" class="scount"></span>
+    </button>
+    <button id="refreshBtn" class="btn primary" type="button" title="Load the latest news"></button>
   </div>
 </header>
 
-
-
-<div class="controls">
-  <div class="wrap">
-    <div class="tabs" role="tablist" aria-label="Edition">
-      <button type="button" role="tab" class="tab" data-ed="world" id="tab-world">World <small id="cnt-world"></small></button>
-      <button type="button" role="tab" class="tab" data-ed="india" id="tab-india">India <small id="cnt-india"></small></button>
+<main class="wrap">
+  <div class="toolbar">
+    <div class="tabs" id="filters" role="toolbar" aria-label="Filters"></div>
+    <div class="tools">
+      <button id="searchBtn" class="iconbtn sm" type="button" aria-label="Search headlines" aria-expanded="false" aria-controls="searchRow" title="Search headlines">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button id="viewBtn" class="iconbtn sm" type="button" aria-pressed="false" aria-label="Show summaries and tags" title="Show summaries and tags">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h10M4 15h16M4 19h10"/></svg>
+      </button>
     </div>
-    <div class="search">
-      <input id="q" type="search" placeholder="Search headlines: Ukraine, NATO, tariffs, Taiwan…" autocomplete="off" aria-label="Search headlines">
-    </div>
-    <div class="chips" id="regionChips" role="group" aria-label="Filter by region"></div>
-    <div class="chips" id="topicChips" role="group" aria-label="Filter by topic"></div>
-    <div class="ticker" id="ticker" role="region" aria-label="Commodity prices" hidden></div>
   </div>
-</div>
+  <div id="searchRow" class="search" hidden>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search headlines: Ukraine, NATO, tariffs, Taiwan…" aria-label="Search headlines" autocomplete="off">
+    <button id="qClear" class="clear" type="button" aria-label="Clear and close search">✕</button>
+  </div>
+  <p class="stats" id="stats" aria-live="polite">Loading news…</p>
+  <div class="ticker" id="ticker" role="region" aria-label="Commodity prices" hidden></div>
+  <div id="fmenu" class="menu" role="menu" hidden></div>
 
-<main>
-  <div class="wrap">
-    <section class="feed" id="feed" aria-live="polite">
+  <div class="grid">
+    <section class="stream compact gaw" id="feed" aria-live="polite">
       <div class="empty">Loading headlines from public RSS feeds…</div>
     </section>
-
   </div>
+  <p class="foot">Global Affairs Wire · headlines © their publishers. Collected from public RSS feeds every 15 minutes; region and topic tags are assigned automatically from keywords. Times are in your local time zone.</p>
 </main>
 
-<section class="stats" aria-label="Summary">
-  <div class="wrap">
-    <div class="stat"><strong id="sTotal">–</strong><span>Stories loaded</span></div>
-    <div class="stat"><strong id="s60">–</strong><span>Last 60 min</span></div>
-    <div class="stat"><strong id="s24">–</strong><span>Last 24 hours</span></div>
-    <div class="stat clickable" id="feedsStat" role="button" tabindex="0" title="Show sources and feed health"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
-  </div>
-</section>
-<div class="clocks" aria-label="World clocks"><div class="wrap" id="clocks"></div></div>
-
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" inert>
+<div id="scrim" class="scrim" hidden></div>
+<aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
   <div class="drawer-head">
     <h2 id="drawerTitle">Sources</h2>
-    <button class="drawer-close" id="drawerClose" type="button" aria-label="Close">×</button>
+    <button id="drawerClose" class="iconbtn" type="button" aria-label="Close sources">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
   </div>
-  <div class="drawer-body">
-    <div>
-      <h2>Hotspots · last 24h</h2>
-      <div class="bars" id="bars"></div>
+  <div class="panel">
+    <h2>Fresh news</h2>
+    <p class="note" style="margin-top:0" id="fetchNote">News is collected every 15 minutes.</p>
+    <p class="note">For newer stories right away, open the fetch page, press <b>Run workflow</b>, wait about two minutes, then press Refresh here.</p>
+    <a class="btn" style="margin-top:10px;text-decoration:none" href="https://github.com/nyamalagame/global-affairs-wire/actions/workflows/feeds.yml" target="_blank" rel="noopener noreferrer">Open fetch page ↗</a>
+  </div>
+  <div class="panel">
+    <h2>Hotspots · last 24 h</h2>
+    <div class="bars" id="bars"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h2>Outlets &amp; feed health</h2><small class="scount" id="feedTotalNote"><span id="feedTotal">–</span> outlets</small></div>
+    <div id="outlets"></div>
+  </div>
+  <div class="panel">
+    <h2>World clocks</h2>
+    <div class="clocks" id="clocks"></div>
+  </div>
+  <div class="panel">
+    <h2>Appearance</h2>
+    <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
+      <button type="button" data-theme="system">System</button><button type="button" data-theme="light">Light</button><button type="button" data-theme="dark">Dark</button>
     </div>
-    <div>
-      <h2>Outlets &amp; feed health</h2>
-      <div class="outlets" id="outlets"></div>
-    </div>
-    <div>
-      <h2>Auto-refresh</h2>
-      <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 15 minutes</label>
-      <p class="note" id="nextRef"></p>
-    </div>
-    <p class="note">Headlines come from each publisher's public RSS feed. A GitHub Actions job collects them every 15 minutes; if that snapshot isn't available, the page fetches the feeds itself through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
   </div>
 </aside>
-
-<footer><div class="wrap">Global Affairs Wire · headlines © their respective publishers</div></footer>
 
 <script>
 (() => {
@@ -373,12 +219,11 @@ const state = {
   region: "All",
   topic: LS.get("topic", "All"),
   q: "",
-  shown: 80,
+  shown: 200,
   loading: false,
   lastLoad: 0,
-  auto: LS.get("auto", true)
+  view: LS.get("view", "compact")
 };
-const REFRESH_MS = 15 * 60 * 1000;
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -547,15 +392,11 @@ function renderMarkets(j){
   el.innerHTML = j.items.map(i => {
     const ch = i.prev ? (i.price - i.prev) / i.prev * 100 : null;
     const cls = ch == null ? "flat" : ch > 0.005 ? "up" : ch < -0.005 ? "dn" : "flat";
-    const chTxt = ch == null ? "–" : (ch > 0 ? "▲ +" : ch < 0 ? "▼ " : "") + ch.toFixed(2) + "%";
+    const chTxt = ch == null ? "–" : (ch > 0 ? "+" : "") + ch.toFixed(2) + "%";
     const unit = i.group === "India" ? i.unit + " ex-GST" : i.unit;
     const tip = [i.name, unit, i.withGst ? `₹${i.withGst.toLocaleString("en-IN")} incl. ${Math.round((j.indiaGst || .03) * 100)}% GST` : "", `last trade ${when(i.asOf)}`, i.source, i.stale ? "last known value" : ""].filter(Boolean).join(" · ");
-    return `<div class="tk${i.group === "India" ? " in" : ""}" title="${esc(tip)}">
-      <span class="n">${esc(i.name)} <small>${esc(unit)}</small></span>
-      <span class="p">${fmtPrice(i)}</span><span class="c ${cls}">${chTxt}</span>
-      <span class="s ${cls}">${sparkline(i.spark)}</span>
-    </div>`;
-  }).join("") + `<div class="tk meta"><span class="n">Futures · delayed · vs prev. close</span><span class="c flat">Updated ${fmtTime(Date.parse(j.generated))}</span></div>`;
+    return `<div class="tk${i.group === "India" ? " in" : ""}" title="${esc(tip)}"><span class="n">${esc(i.name)}</span><span class="p">${fmtPrice(i)}</span><span class="c ${cls}">${chTxt}</span></div>`;
+  }).join("") + `<div class="tk meta" title="Front-month futures, delayed, change vs previous close">Futures · ${fmtTime(Date.parse(j.generated))}</div>`;
   el.hidden = false;
 }
 
@@ -563,13 +404,13 @@ async function loadAll(){
   if (state.loading) return;
   loadMarkets();
   state.loading = true;
-  $("refreshBtn").disabled = true;
+  setRefreshButton(true);
   setLive("Updating", false);
   try {
     await loadSnapshot();
     state.loading = false;
     state.lastLoad = Date.now();
-    $("refreshBtn").disabled = false;
+    setRefreshButton(false);
     $("feedTotal").textContent = FEEDS.length;
     const age = Math.round((Date.now() - state.snapAt) / 60000);
     setLive(age > 45 ? `Snapshot ${age} min old` : `Live · updated ${fmtTime(state.snapAt)}`, age <= 45);
@@ -588,14 +429,14 @@ async function loadAll(){
   LS.set("proxyFor", state.proxyFor);
   state.loading = false;
   state.lastLoad = Date.now();
-  $("refreshBtn").disabled = false;
+  setRefreshButton(false);
   const live = active.filter(f => state.health[f.id] && state.health[f.id].status !== "fail").length;
   setLive(live ? "Live" : "Feeds unreachable", live > 0);
   render();
 }
 
 function mergeStories(a, b){
-  const all = [...a, ...b].filter(s => s.title && s.link);
+  const all = [...a, ...b].filter(s => s.title && s.link && !/^(undefined|null)$/i.test(s.title));
   const byLink = new Map();
   for (const s of all) if (!byLink.has(s.link)) byLink.set(s.link, s);
   // group near-identical headlines across outlets
@@ -610,7 +451,17 @@ function mergeStories(a, b){
 }
 
 /* ---------- Rendering ---------- */
-function setLive(text, on){ $("liveText").textContent = text; $("liveState").classList.toggle("on", !!on); }
+const ICON_REFRESH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>';
+const ICON_CHEVRON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const PAGE = 200;
+
+function setRefreshButton(loading){
+  const b = $("refreshBtn");
+  b.disabled = loading;
+  b.innerHTML = loading ? '<span class="spin" aria-hidden="true"></span><span class="lbl">Loading</span>' : ICON_REFRESH + '<span class="lbl">Refresh</span>';
+  b.setAttribute("aria-label", loading ? "Loading news" : "Refresh");
+}
+function setLive(text, on){ $("liveText").textContent = text; $("liveState").classList.toggle("on", !!on); $("liveState").title = text; }
 
 const curRegions = () => state.edition === "india" ? REGIONS_IN : REGIONS;
 const regionsOf = s => state.edition === "india" ? s.inRegions : s.regions;
@@ -631,7 +482,7 @@ function visibleStories(){
   );
 }
 
-const fmtTime = ts => ts ? new Date(ts).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) : "—";
+const fmtTime = ts => ts ? new Date(ts).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", hour12:false}) : "—";
 function dayLabel(ts){
   if (!ts) return "Undated";
   const d = new Date(ts), now = new Date();
@@ -639,7 +490,7 @@ function dayLabel(ts){
   const diff = Math.round((start(now) - start(d)) / 864e5);
   if (diff === 0) return "Today";
   if (diff === 1) return "Yesterday";
-  return d.toLocaleDateString([], {weekday:"long", day:"numeric", month:"long"});
+  return d.toLocaleDateString([], {weekday:"long", day:"numeric", month:"short"});
 }
 function ago(ts){
   if (!ts) return "";
@@ -649,68 +500,126 @@ function ago(ts){
   const h = Math.round(m / 60);
   return h < 48 ? h + " h ago" : "";
 }
+/* Short outlet label for the narrow source column: "BBC World" -> "BBC", "The Guardian" -> "Guardian" */
+const SHORT = {"Sydney Morning Herald":"SMH", "National Interest":"Natl Interest", "Times of India":"TOI", "Globe and Mail":"Globe & Mail",
+  "War on the Rocks":"WOTR", "Foreign Policy":"FP", "Foreign Affairs":"For. Affairs", "Crisis Group":"ICG", "Balkan Insight":"BIRN",
+  "NYT Asia Pacific":"NYT Asia", "New York Times":"NYT", "Financial Times":"FT", "World Politics Review":"WPR", "Long War Journal":"LWJ",
+  "The Cipher Brief":"Cipher Brief", "Breaking Defense":"Brk Defense", "Hindustan Times":"HT", "Indian Express":"Indian Exp.",
+  "Business Standard":"BS", "ABC (Australia)":"ABC", "CNBC Asia-Pacific":"CNBC Asia", "CNBC Europe":"CNBC EU", "Reuters India":"Reuters",
+  "Daily Maverick":"Maverick", "Asia Sentinel":"Asia Sentinel", "The War Zone":"War Zone"};
+const shortName = n => SHORT[n] || n.replace(/^The\s+/i, "").replace(/\s+(News|World|International|Online)$/i, "").trim();
 
 function render(){
   const now = Date.now();
   const base = editionBase();
   for (const ed of ["world", "india"]){
-    $("cnt-" + ed).textContent = editionBase(ed).filter(s => now - s.ts < 864e5).length || "";
-    const t = $("tab-" + ed); t.setAttribute("aria-selected", state.edition === ed); t.tabIndex = state.edition === ed ? 0 : -1;
+    const t = $("tab-" + ed);
+    if (state.edition === ed) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   }
   $("q").placeholder = state.edition === "india" ? "Search India headlines: Lok Sabha, RBI, Kerala, Kashmir…" : "Search headlines: Ukraine, NATO, tariffs, Taiwan…";
-  $("sTotal").textContent = base.length;
-  $("s60").textContent = base.filter(s => now - s.ts < 36e5).length;
-  $("s24").textContent = base.filter(s => now - s.ts < 864e5).length;
+
+  // one-line stats
+  const st = $("stats");
+  if (!state.stories.length){ st.textContent = state.loading ? "Loading news…" : ""; }
+  else {
+    const n60 = base.filter(s => now - s.ts < 36e5).length, n24 = base.filter(s => now - s.ts < 864e5).length;
+    st.innerHTML = `<b>${base.length.toLocaleString()}</b> stories · <b>${n60}</b> last hour · <b>${n24.toLocaleString()}</b> in 24 h` +
+      (state.snapAt ? `<span class="st-long"> · fetched ${fmtTime(state.snapAt)}</span>` : "");
+  }
+
+  // Sources button: live feeds and a coloured dot
   const active = FEEDS.filter(f => !state.disabled.has(f.id));
   const live = active.filter(f => state.health[f.id] && state.health[f.id].status !== "fail").length;
-  $("sFeeds").textContent = live + "/" + active.length;
-  $("srcBadge").textContent = live + "/" + active.length;
-  $("srcBtn").className = "btn src-btn " + (!Object.keys(state.health).length ? "" : live === active.length ? "ok" : live >= active.length * 0.8 ? "warn" : "bad");
+  const known = Object.keys(state.health).length > 0;
+  $("srcBadge").textContent = known ? live + "/" + active.length : "";
+  $("sdot").className = "sdot" + (!known ? " load" : live === active.length ? "" : live >= active.length * 0.8 ? " warn" : " bad");
 
-  renderChips(base);
+  renderFilters(base);
   renderBars(base, now);
   renderOutlets();
 
   const list = visibleStories();
   const feed = $("feed");
+  const compact = state.view !== "detailed";
+  feed.className = "stream gaw" + (compact ? " compact" : "");
   if (!list.length){
-    feed.innerHTML = `<div class="empty">${state.loading ? "Loading headlines from public RSS feeds…" : base.length ? "No stories match these filters. Try another region, topic or search term." : state.edition === "india" && state.stories.length ? "No India stories loaded yet. They appear after the next update." : "No feeds could be reached. Check your connection and press Refresh."}</div>`;
+    feed.innerHTML = `<div class="empty"><strong>${state.loading ? "Loading headlines…" : "No stories match"}</strong>${state.loading ? "Collecting headlines from public RSS feeds." : base.length ? "Try another region, topic or search term." : state.edition === "india" && state.stories.length ? "No India stories loaded yet. They appear after the next update." : "No feeds could be reached. Check your connection and press Refresh."}</div>`;
     return;
   }
-  let html = "", lastDay = "";
+  const color = s => s.edition === "india" ? "var(--o-india)" : "var(--o-world)";
+  let html = "", lastDay = "", open = false;
   for (const s of list.slice(0, state.shown)){
     const day = dayLabel(s.ts);
-    if (day !== lastDay){ html += `<div class="day">${esc(day)}</div>`; lastDay = day; }
+    if (day !== lastDay){ if (open) html += `</div>`; html += `<div class="day">${esc(day)}</div><div class="list">`; open = true; lastDay = day; }
     const fresh = s.ts && now - s.ts < 30 * 60000;
-    html += `<article class="story${fresh ? " fresh" : ""}">
-      <time datetime="${s.ts ? new Date(s.ts).toISOString() : ""}" title="${esc(ago(s.ts))}">${fmtTime(s.ts)}</time>
-      <div style="min-width:0">
-        <h3><a href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a></h3>
-        ${s.summary ? `<p>${esc(s.summary)}</p>` : ""}
-        <div class="meta">
-          ${fresh ? `<span class="new">New</span>` : ""}
-          <span class="src">${esc(s.src)}</span>
-          ${regionsOf(s).slice(0, 2).map(r => `<span class="tag">${esc(r)}</span>`).join("")}
-          ${s.topics.slice(0, 2).map(t => `<span class="tag topic">${esc(t)}</span>`).join("")}
-          ${s.also.length ? `<span class="also">also ${esc(s.also.join(", "))}</span>` : ""}
+    const tags = regionsOf(s).slice(0, 2);
+    const also = s.also.length ? `<span class="also" title="Also reported by ${esc(s.also.join(", "))}">+${s.also.length}</span>` : "";
+    if (compact){
+      const hint = [s.src, ...tags, ago(s.ts), s.also.length ? "also " + s.also.join(", ") : ""].filter(Boolean).join(" · ");
+      html += `<article class="item${fresh ? " fresh" : ""}" title="${esc(hint)}">
+        <div class="time"><span class="hm">${fmtTime(s.ts)}</span><span class="src" style="--c:${color(s)}">${esc(shortName(s.src))}</span></div>
+        <div class="body"><a class="title" href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a></div>
+        ${also}
+      </article>`;
+    } else {
+      html += `<article class="item">
+        <div class="time">${fmtTime(s.ts)}<small>${esc(ago(s.ts))}</small></div>
+        <div class="body${fresh ? " fresh" : ""}">
+          <div class="top"><span class="src" style="--c:${color(s)}">${esc(s.src)}</span>${tags.map(r => `<span class="tag">${esc(r)}</span>`).join("")}${s.topics.slice(0, 2).map(t => `<span class="tag topic">${esc(t)}</span>`).join("")}</div>
+          <a class="title" href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>
+          ${s.summary ? `<p class="snip">${esc(s.summary)}</p>` : ""}
+          ${s.also.length ? `<div class="sec" style="margin-top:4px">Also: ${esc(s.also.join(", "))}</div>` : ""}
         </div>
-      </div>
-    </article>`;
+      </article>`;
+    }
   }
-  if (list.length > state.shown) html += `<button class="btn more" id="moreBtn" type="button">Show ${Math.min(80, list.length - state.shown)} more of ${list.length - state.shown}</button>`;
+  if (open) html += `</div>`;
+  if (list.length > state.shown) html += `<div class="more-row"><button class="btn" id="moreBtn" type="button">Show ${Math.min(PAGE, list.length - state.shown)} more (${(list.length - state.shown).toLocaleString()} older)</button></div>`;
   feed.innerHTML = html;
-  const mb = $("moreBtn"); if (mb) mb.onclick = () => { state.shown += 80; render(); };
+  const mb = $("moreBtn");
+  if (mb) mb.onclick = () => { const y = window.scrollY; state.shown += PAGE; render(); window.scrollTo({top:y}); };
 }
 
-function renderChips(base){
-  const mk = (el, rules, key) => {
-    const counts = Object.fromEntries(rules.map(([n]) => [n, 0]));
-    for (const s of base) for (const n of (key === "region" ? regionsOf(s) : s.topics)) if (n in counts) counts[n]++;
-    const names = ["All", ...rules.map(([n]) => n)];
-    el.innerHTML = names.map(n => `<button type="button" class="chip" data-v="${esc(n)}" aria-pressed="${state[key] === n}">${esc(n === "All" ? (key === "region" ? (state.edition === "india" ? "All India" : "All regions") : "All topics") : n)}${n === "All" ? "" : `<small>${counts[n]}</small>`}</button>`).join("");
-  };
-  mk($("regionChips"), curRegions(), "region");
-  mk($("topicChips"), TOPICS, "topic");
+/* Region and topic filters: one menu button each, showing the current choice */
+const FILTERS = {
+  region: () => ({label: state.edition === "india" ? "All India" : "All regions", rules: curRegions(), of: regionsOf}),
+  topic:  () => ({label: "All topics", rules: TOPICS, of: s => s.topics})
+};
+function filterCounts(kind, base){
+  const f = FILTERS[kind]();
+  const counts = Object.fromEntries(f.rules.map(([n]) => [n, 0]));
+  for (const s of base) for (const n of f.of(s)) if (n in counts) counts[n]++;
+  return counts;
+}
+function renderFilters(base){
+  $("filters").innerHTML = ["region", "topic"].map(kind => {
+    const f = FILTERS[kind](), v = state[kind];
+    return `<button type="button" class="tab more" data-kind="${kind}" aria-haspopup="menu" aria-controls="fmenu" aria-expanded="${!$("fmenu").hidden && state.menuKind === kind}" aria-pressed="${v !== "All"}"><span class="fv">${esc(v === "All" ? f.label : v)}</span>${ICON_CHEVRON}</button>`;
+  }).join("");
+  state.lastBase = base;
+}
+function openFilterMenu(kind, btn){
+  const f = FILTERS[kind](), counts = filterCounts(kind, state.lastBase || editionBase());
+  const menu = $("fmenu");
+  menu.setAttribute("aria-label", kind === "region" ? "Filter by region" : "Filter by topic");
+  menu.innerHTML = [["All", f.label], ...f.rules.map(([n]) => [n, n])].map(([v, label]) =>
+    `<button type="button" role="menuitemradio" data-kind="${kind}" data-v="${esc(v)}" aria-checked="${state[kind] === v}">${esc(label)}${v === "All" ? "" : `<em>${counts[v]}</em>`}</button>`).join("");
+  menu.hidden = false;
+  state.menuKind = kind;
+  const r = btn.getBoundingClientRect();
+  menu.style.top = Math.round(r.bottom + 6) + "px";
+  menu.style.left = Math.round(Math.max(12, Math.min(r.left, innerWidth - menu.offsetWidth - 12))) + "px";
+  btn.setAttribute("aria-expanded", "true");
+  state.menuAt = {y: scrollY, x: $("filters").scrollLeft};
+  const first = menu.querySelector('[aria-checked="true"]') || menu.querySelector("button");
+  if (first) first.focus({preventScroll:true});
+}
+function closeMenu(returnFocus){
+  const menu = $("fmenu");
+  if (menu.hidden) return;
+  menu.hidden = true;
+  const btn = $("filters").querySelector(`[data-kind="${state.menuKind}"]`);
+  if (btn){ btn.setAttribute("aria-expanded", "false"); if (returnFocus) btn.focus(); }
 }
 
 function renderBars(base, now){
@@ -727,96 +636,150 @@ function renderOutlets(){
     const cls = off ? "" : h ? h.status : "";
     const info = off ? "off" : !h ? "…" : h.status === "fail" ? "down" : `${h.count} · ${(h.ms / 1000).toFixed(1)}s`;
     const title = h && h.err ? ` title="${esc(h.err)}"` : "";
-    return `<label class="outlet"${title}><input type="checkbox" data-id="${f.id}" ${off ? "" : "checked"}><span style="display:flex;align-items:center;gap:8px;min-width:0"><span class="health ${cls}"></span>${esc(f.name)}</span><small>${info}</small></label>`;
+    return `<label class="ocheck"${title}><input type="checkbox" data-id="${f.id}" ${off ? "" : "checked"}><span class="hd ${cls}"></span><span>${esc(f.name)}</span><small>${info}</small></label>`;
   };
   $("outlets").innerHTML = [["world", "World outlets"], ["india", "India outlets"]].map(([ed, label]) => {
     const fs = FEEDS.filter(f => (f.edition || "world") === ed);
-    return fs.length ? `<div class="outlet-group">${label} · ${fs.length}</div>` + fs.map(row).join("") : "";
+    return fs.length ? `<div class="ogroup">${label} · ${fs.length}</div>` + fs.map(row).join("") : "";
   }).join("");
+  $("fetchNote").textContent = state.snapAt
+    ? `Collected by the server at ${fmtTime(state.snapAt)} (${ago(state.snapAt) || "earlier"}). The server fetches every 15 minutes.` + (state.lastLoad ? ` Page loaded at ${fmtTime(state.lastLoad)}.` : "")
+    : state.lastLoad ? `Fetched through public proxies at ${fmtTime(state.lastLoad)}.` : "News is collected every 15 minutes.";
 }
 
-/* ---------- Clocks ---------- */
+/* ---------- Clocks (in the Sources panel) ---------- */
 const ZONES = [["Local", undefined], ["UTC", "UTC"], ["Washington", "America/New_York"], ["London", "Europe/London"], ["Brussels", "Europe/Brussels"], ["Moscow", "Europe/Moscow"], ["Tehran", "Asia/Tehran"], ["New Delhi", "Asia/Kolkata"], ["Beijing", "Asia/Shanghai"], ["Tokyo", "Asia/Tokyo"]];
-$("clocks").innerHTML = ZONES.map(([n], i) => `<div class="clock"><b>${n}</b><time id="clk${i}">--:--</time></div>`).join("");
+$("clocks").innerHTML = ZONES.map(([n], i) => `<div><b>${n}</b><time id="clk${i}">--:--</time></div>`).join("");
 function tick(){
   const d = new Date();
-  ZONES.forEach(([, tz], i) => {
-    $("clk" + i).textContent = d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", timeZone: tz});
-  });
-  if (state.auto && state.lastLoad){
-    const left = Math.max(0, state.lastLoad + REFRESH_MS - Date.now());
-    $("nextRef").textContent = `Next refresh in ${Math.ceil(left / 60000)} min · last updated ${fmtTime(state.lastLoad)}`;
-    if (left === 0 && !state.loading && document.visibilityState === "visible") loadAll();
-  } else if (state.lastLoad) {
-    $("nextRef").textContent = `Auto-refresh off · last updated ${fmtTime(state.lastLoad)}`;
-  }
+  ZONES.forEach(([, tz], i) => { $("clk" + i).textContent = d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit", timeZone: tz}); });
 }
 
 /* ---------- Events ---------- */
 $("refreshBtn").onclick = loadAll;
-function setEdition(ed){
+
+function setEdition(ed, fromHash){
+  if (ed !== "world" && ed !== "india") return;
+  if (!fromHash) try { history.replaceState(null, "", "#" + ed); } catch {}
   if (state.edition === ed) return;
   state.edition = ed; LS.set("edition", ed);
-  state.region = "All"; state.shown = 80;
+  state.region = "All"; state.shown = PAGE;
+  closeMenu(false);
   render();
 }
-document.querySelector(".tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (t) setEdition(t.dataset.ed); });
-document.querySelector(".tabs").addEventListener("keydown", e => {
-  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-  const next = state.edition === "world" ? "india" : "world";
-  setEdition(next); $("tab-" + next).focus();
+document.querySelector(".editions").addEventListener("click", e => { const t = e.target.closest("button.ed"); if (t) setEdition(t.dataset.ed); });
+// Links from the Dalal Street page arrive as #world or #india
+window.addEventListener("hashchange", () => setEdition(location.hash.slice(1), true));
+if (location.hash === "#world" || location.hash === "#india") state.edition = location.hash.slice(1);
+
+$("q").addEventListener("input", e => { state.q = e.target.value; state.shown = PAGE; render(); });
+function openSearch(){ $("searchRow").hidden = false; $("searchBtn").setAttribute("aria-expanded", "true"); $("q").focus(); }
+function closeSearch(){
+  $("searchRow").hidden = true; $("searchBtn").setAttribute("aria-expanded", "false");
+  if ($("q").value){ $("q").value = ""; state.q = ""; state.shown = PAGE; render(); }
+}
+$("searchBtn").onclick = () => $("searchRow").hidden ? openSearch() : closeSearch();
+$("qClear").onclick = () => { closeSearch(); $("searchBtn").focus(); };
+$("q").addEventListener("keydown", e => { if (e.key === "Escape"){ e.preventDefault(); closeSearch(); $("searchBtn").focus(); } });
+
+function applyView(){
+  const detailed = state.view === "detailed";
+  const vb = $("viewBtn");
+  vb.setAttribute("aria-pressed", String(detailed));
+  vb.title = detailed ? "Show headlines only" : "Show summaries and tags";
+  vb.setAttribute("aria-label", vb.title);
+}
+$("viewBtn").onclick = () => { state.view = state.view === "detailed" ? "compact" : "detailed"; LS.set("view", state.view); applyView(); render(); };
+
+$("filters").addEventListener("click", e => {
+  const b = e.target.closest(".tab.more"); if (!b) return;
+  e.stopPropagation();
+  const kind = b.dataset.kind;
+  if (!$("fmenu").hidden && state.menuKind === kind) closeMenu(true); else { closeMenu(false); openFilterMenu(kind, b); }
 });
-$("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 80; render(); });
-$("regionChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.region = b.dataset.v; state.shown = 80; render(); });
-$("topicChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.topic = b.dataset.v; LS.set("topic", state.topic); state.shown = 80; render(); });
-$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; render(); closeDrawer(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
+$("fmenu").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  const kind = b.dataset.kind;
+  state[kind] = b.dataset.v; if (kind === "topic") LS.set("topic", state.topic);
+  state.shown = PAGE; closeMenu(false); render(); window.scrollTo({top:0});
+});
+$("fmenu").addEventListener("keydown", e => {
+  const items = [...$("fmenu").querySelectorAll("button")];
+  const i = items.indexOf(document.activeElement);
+  if (e.key === "Escape"){ e.preventDefault(); closeMenu(true); }
+  else if (e.key === "ArrowDown"){ e.preventDefault(); items[(i + 1) % items.length].focus(); }
+  else if (e.key === "ArrowUp"){ e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  else if (e.key === "Tab") closeMenu(false);
+});
+document.addEventListener("click", e => { if (!$("fmenu").hidden && !$("fmenu").contains(e.target)) closeMenu(false); });
+function closeIfScrolled(){
+  const at = state.menuAt;
+  if ($("fmenu").hidden || !at) return;
+  if (Math.abs(scrollY - at.y) > 40 || Math.abs($("filters").scrollLeft - at.x) > 40) closeMenu(false);
+}
+addEventListener("scroll", closeIfScrolled, {passive:true});
+$("filters").addEventListener("scroll", closeIfScrolled, {passive:true});
+addEventListener("resize", () => closeMenu(false));
+
+$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; state.shown = PAGE; render(); closeDrawer(); window.scrollTo({top:0}); });
 $("outlets").addEventListener("change", e => {
   const id = e.target.dataset.id; if (!id) return;
-  if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); if (!state.snap) loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
+  if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); if (!state.snap && f) loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
   else { state.disabled.add(id); LS.set("disabled", [...state.disabled]); }
+  state.shown = PAGE;
   render();
 });
-$("autoRef").checked = state.auto;
-$("autoRef").addEventListener("change", e => { state.auto = e.target.checked; LS.set("auto", state.auto); tick(); });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && state.auto && Date.now() - state.lastLoad > REFRESH_MS) loadAll(); });
 
-/* Theme toggle */
-const savedTheme = LS.get("theme", null);
-if (savedTheme) document.documentElement.dataset.theme = savedTheme;
-$("themeBtn").onclick = () => {
-  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  const next = cur === "dark" ? "light" : "dark";
-  document.documentElement.dataset.theme = next; LS.set("theme", next);
-};
+/* Theme: System / Light / Dark, shared with the Dalal Street page */
+function applyTheme(){
+  const t = LS.get("theme", null);
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  for (const b of $("themeSeg").querySelectorAll("button")) b.setAttribute("aria-pressed", String((t || "system") === b.dataset.theme));
+}
+$("themeSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  LS.set("theme", b.dataset.theme === "system" ? null : b.dataset.theme); applyTheme();
+});
 
-/* Sidebar open on desktop, collapsed on phones */
 /* Sources drawer */
 let lastFocus = null;
 function openDrawer(){
   lastFocus = document.activeElement;
-  $("drawer").inert = false;
+  $("drawer").hidden = false; $("scrim").hidden = false;
   document.body.classList.add("drawer-open");
   $("srcBtn").setAttribute("aria-expanded", "true");
-  setTimeout(() => $("drawerClose").focus(), 50);
+  tick();
+  $("drawerClose").focus();
 }
 function closeDrawer(){
-  if (!document.body.classList.contains("drawer-open")) return;
+  if ($("drawer").hidden) return;
+  $("drawer").hidden = true; $("scrim").hidden = true;
   document.body.classList.remove("drawer-open");
-  $("drawer").inert = true;
   $("srcBtn").setAttribute("aria-expanded", "false");
   if (lastFocus) lastFocus.focus();
 }
 $("srcBtn").onclick = openDrawer;
-$("feedsStat").onclick = openDrawer;
-$("feedsStat").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openDrawer(); } });
 $("drawerClose").onclick = closeDrawer;
 $("scrim").onclick = closeDrawer;
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+document.addEventListener("keydown", e => {
+  if ($("drawer").hidden) return;
+  if (e.key === "Escape"){ closeDrawer(); return; }
+  if (e.key === "Tab"){
+    const f = [...$("drawer").querySelectorAll("button, a[href], input")];
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
 
 $("feedTotal").textContent = FEEDS.length;
+setRefreshButton(false);
+applyView();
+applyTheme();
 render();
 tick();
 setInterval(tick, 15000);
+setInterval(() => { if (state.stories.length && !state.loading) render(); }, 60000); // keep "last hour" counts current
 loadAll();
 })();
 </script>

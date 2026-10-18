@@ -2,7 +2,9 @@ name: Refresh feeds and deploy
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes (GitHub may delay scheduled runs at busy times)
+    # Every 15 minutes, at :04, :19, :34 and :49. Off the quarter hour, when
+    # GitHub's scheduler is busiest and delays runs.
+    - cron: "4,19,34,49 * * * *"
   push:
     branches: [main]
   workflow_dispatch:
@@ -36,6 +38,19 @@ jobs:
         continue-on-error: true
         env:
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+      # Dalal Street tab: its own page and feeds, published at /dalal-street/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch Dalal Street feeds
+        continue-on-error: true   # never block World and India from publishing
+        run: |
+          pip install feedparser==6.0.11
+          mkdir -p _site/dalal-street/data
+          cp dalal-street/index.html _site/dalal-street/index.html
+          python scripts/fetch_dalal.py _site/dalal-street/data/feeds.json
 
       - uses: actions/configure-pages@v5
 
