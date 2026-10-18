@@ -49,6 +49,7 @@ header.mast{border-bottom:3px solid var(--ink)}
 
 /* Clock strip */
 .clocks{border-bottom:1px solid var(--line);background:var(--panel)}
+.stats{border-top:2px solid var(--ink)}
 .clocks .wrap{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
 .clock{flex:1 0 auto;padding:8px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:96px}
 .clock:first-child{padding-left:0}
@@ -75,6 +76,15 @@ header.mast{border-bottom:3px solid var(--ink)}
 .chip small{font:500 11px var(--mono);color:var(--muted);margin-left:4px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .chip[aria-pressed="true"] small{color:inherit;opacity:.75}
+
+/* Edition tabs */
+.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-bottom:2px}
+.tab{background:none;border:0;padding:4px 0 8px;cursor:pointer;font:800 20px/1 var(--display);font-stretch:110%;text-transform:uppercase;letter-spacing:.01em;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab small{font:500 12px var(--mono);letter-spacing:0;margin-left:4px;vertical-align:2px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+.outlet-group{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 0 4px}
+.outlet-group:first-child{padding-top:0}
 
 /* Commodity strip */
 .ticker{display:flex;overflow-x:auto;scrollbar-width:thin;border:1px solid var(--line);background:var(--panel);border-radius:2px}
@@ -166,7 +176,7 @@ body.drawer-open .drawer{transform:none}
   <div class="wrap">
     <div class="brand">
       <h1>Global Affairs <span>Wire</span></h1>
-      <p>World geopolitics · live from <span id="feedTotal">16</span> outlets</p>
+      <p>World &amp; India affairs · live from <span id="feedTotal">16</span> outlets</p>
     </div>
     <div class="mast-right">
       <span class="live" id="liveState"><span class="dot"></span><span id="liveText">Connecting</span></span>
@@ -177,19 +187,14 @@ body.drawer-open .drawer{transform:none}
   </div>
 </header>
 
-<div class="clocks" aria-label="World clocks"><div class="wrap" id="clocks"></div></div>
 
-<section class="stats" aria-label="Summary">
-  <div class="wrap">
-    <div class="stat"><strong id="sTotal">–</strong><span>Stories loaded</span></div>
-    <div class="stat"><strong id="s60">–</strong><span>Last 60 min</span></div>
-    <div class="stat"><strong id="s24">–</strong><span>Last 24 hours</span></div>
-    <div class="stat clickable" id="feedsStat" role="button" tabindex="0" title="Show sources and feed health"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
-  </div>
-</section>
 
 <div class="controls">
   <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Edition">
+      <button type="button" role="tab" class="tab" data-ed="world" id="tab-world">World <small id="cnt-world"></small></button>
+      <button type="button" role="tab" class="tab" data-ed="india" id="tab-india">India <small id="cnt-india"></small></button>
+    </div>
     <div class="search">
       <input id="q" type="search" placeholder="Search headlines: Ukraine, NATO, tariffs, Taiwan…" autocomplete="off" aria-label="Search headlines">
     </div>
@@ -207,6 +212,16 @@ body.drawer-open .drawer{transform:none}
 
   </div>
 </main>
+
+<section class="stats" aria-label="Summary">
+  <div class="wrap">
+    <div class="stat"><strong id="sTotal">–</strong><span>Stories loaded</span></div>
+    <div class="stat"><strong id="s60">–</strong><span>Last 60 min</span></div>
+    <div class="stat"><strong id="s24">–</strong><span>Last 24 hours</span></div>
+    <div class="stat clickable" id="feedsStat" role="button" tabindex="0" title="Show sources and feed health"><strong id="sFeeds">–</strong><span>Feeds live</span></div>
+  </div>
+</section>
+<div class="clocks" aria-label="World clocks"><div class="wrap" id="clocks"></div></div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" inert>
@@ -240,58 +255,71 @@ body.drawer-open .drawer{transform:none}
 
 /* ---------- Sources ---------- */
 const FEEDS = [
-  {id:"reuters", name:"Reuters", url:"https://news.google.com/rss/search?q=when:24h+site:reuters.com/world&ceid=US:en&hl=en-US&gl=US"},
-  {id:"ap", name:"AP News", url:"https://news.google.com/rss/search?q=when%3A24h%20site%3Aapnews.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US"},
-  {id:"bbg", name:"Bloomberg", url:"https://news.google.com/rss/search?q=when%3A24h%20site%3Abloomberg.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US"},
-  {id:"bbc", name:"BBC World", url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
-  {id:"aj", name:"Al Jazeera", url:"https://www.aljazeera.com/xml/rss/all.xml"},
-  {id:"grd", name:"The Guardian", url:"https://www.theguardian.com/world/rss"},
-  {id:"nyt", name:"New York Times", url:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
-  {id:"dw", name:"DW", url:"https://rss.dw.com/rdf/rss-en-top"},
-  {id:"f24", name:"France 24", url:"https://www.france24.com/en/monde/rss"},
-  {id:"npr", name:"NPR World", url:"https://feeds.npr.org/1004/rss.xml"},
-  {id:"sky", name:"Sky News", url:"https://feeds.skynews.com/feeds/rss/world.xml"},
-  {id:"cnbc", name:"CNBC World", url:"https://www.cnbc.com/id/100727362/device/rss/rss.html"},
-  {id:"un", name:"UN News", url:"https://news.un.org/feed/subscribe/en/news/all/rss.xml"},
-  {id:"fp", name:"Foreign Policy", url:"https://foreignpolicy.com/feed/"},
-  {id:"dip", name:"The Diplomat", url:"https://thediplomat.com/feed/"},
-  {id:"wotr", name:"War on the Rocks", url:"https://warontherocks.com/feed/"},
-  {id:"hindu", name:"The Hindu", url:"https://www.thehindu.com/news/international/feeder/default.rss"},
-  {id:"scmp", name:"SCMP World", url:"https://www.scmp.com/rss/5/feed"},
-  {id:"abc", name:"ABC (Australia)", url:"https://www.abc.net.au/news/feed/104217382/rss.xml"},
-  {id:"at", name:"Asia Times", url:"https://asiatimes.com/feed/"},
-  {id:"nikkei", name:"Nikkei Asia", url:"https://asia.nikkei.com/rss/feed/nar"},
-  {id:"nyt-ap", name:"NYT Asia Pacific", url:"https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml"},
-  {id:"cnbc-eu", name:"CNBC Europe", url:"https://www.cnbc.com/id/19794221/device/rss/rss.html"},
-  {id:"cnbc-ap", name:"CNBC Asia-Pacific", url:"https://www.cnbc.com/id/19832390/device/rss/rss.html"},
-  {id:"euronews", name:"Euronews", url:"https://www.euronews.com/rss"},
-  {id:"rfi", name:"RFI", url:"https://www.rfi.fr/en/international/rss"},
-  {id:"upi", name:"UPI World", url:"https://rss.upi.com/news/tn_int.rss"},
-  {id:"ft", name:"Financial Times", url:"https://www.ft.com/world?format=rss"},
-  {id:"lemonde", name:"Le Monde", url:"https://www.lemonde.fr/en/international/rss_full.xml"},
-  {id:"euobs", name:"EUobserver", url:"https://euobserver.com/feed/"},
-  {id:"birn", name:"Balkan Insight", url:"https://balkaninsight.com/feed/"},
-  {id:"globe", name:"Globe and Mail", url:"https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/"},
-  {id:"global", name:"Global News", url:"https://globalnews.ca/world/feed/"},
-  {id:"smh", name:"Sydney Morning Herald", url:"https://www.smh.com.au/rss/world.xml"},
-  {id:"sbs", name:"SBS News", url:"https://www.sbs.com.au/news/topic/world/feed"},
-  {id:"jt", name:"Japan Times", url:"https://www.japantimes.co.jp/feed/"},
-  {id:"mandala", name:"New Mandala", url:"https://www.newmandala.org/feed/"},
-  {id:"sentinel", name:"Asia Sentinel", url:"https://www.asiasentinel.com/feed"},
-  {id:"toi", name:"Times of India", url:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"},
-  {id:"ndtv", name:"NDTV World", url:"https://feeds.feedburner.com/ndtvnews-world-news"},
-  {id:"print", name:"ThePrint", url:"https://theprint.in/category/world/feed/"},
-  {id:"merco", name:"MercoPress", url:"https://en.mercopress.com/rss/"},
-  {id:"maverick", name:"Daily Maverick", url:"https://www.dailymaverick.co.za/rss"},
-  {id:"fa", name:"Foreign Affairs", url:"https://www.foreignaffairs.com/rss.xml"},
-  {id:"icg", name:"Crisis Group", url:"https://www.crisisgroup.org/rss"},
-  {id:"wpr", name:"World Politics Review", url:"https://www.worldpoliticsreview.com/feed/"},
-  {id:"ni", name:"National Interest", url:"https://nationalinterest.org/feed"},
-  {id:"lwj", name:"Long War Journal", url:"https://www.longwarjournal.org/feed"},
-  {id:"cipher", name:"The Cipher Brief", url:"https://www.thecipherbrief.com/feeds/feed.rss"},
-  {id:"bd", name:"Breaking Defense", url:"https://breakingdefense.com/feed/"},
-  {id:"twz", name:"The War Zone", url:"https://www.twz.com/feed"},
-  {id:"naval", name:"Naval News", url:"https://www.navalnews.com/feed/"}
+  {id:"reuters", name:"Reuters", url:"https://news.google.com/rss/search?q=when:24h+site:reuters.com/world&ceid=US:en&hl=en-US&gl=US", edition:"world"},
+  {id:"ap", name:"AP News", url:"https://news.google.com/rss/search?q=when%3A24h%20site%3Aapnews.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US", edition:"world"},
+  {id:"bbg", name:"Bloomberg", url:"https://news.google.com/rss/search?q=when%3A24h%20site%3Abloomberg.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US", edition:"world"},
+  {id:"bbc", name:"BBC World", url:"https://feeds.bbci.co.uk/news/world/rss.xml", edition:"world"},
+  {id:"aj", name:"Al Jazeera", url:"https://www.aljazeera.com/xml/rss/all.xml", edition:"world"},
+  {id:"grd", name:"The Guardian", url:"https://www.theguardian.com/world/rss", edition:"world"},
+  {id:"nyt", name:"New York Times", url:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml", edition:"world"},
+  {id:"dw", name:"DW", url:"https://rss.dw.com/rdf/rss-en-top", edition:"world"},
+  {id:"f24", name:"France 24", url:"https://www.france24.com/en/monde/rss", edition:"world"},
+  {id:"npr", name:"NPR World", url:"https://feeds.npr.org/1004/rss.xml", edition:"world"},
+  {id:"sky", name:"Sky News", url:"https://feeds.skynews.com/feeds/rss/world.xml", edition:"world"},
+  {id:"cnbc", name:"CNBC World", url:"https://www.cnbc.com/id/100727362/device/rss/rss.html", edition:"world"},
+  {id:"un", name:"UN News", url:"https://news.un.org/feed/subscribe/en/news/all/rss.xml", edition:"world"},
+  {id:"fp", name:"Foreign Policy", url:"https://foreignpolicy.com/feed/", edition:"world"},
+  {id:"dip", name:"The Diplomat", url:"https://thediplomat.com/feed/", edition:"world"},
+  {id:"wotr", name:"War on the Rocks", url:"https://warontherocks.com/feed/", edition:"world"},
+  {id:"hindu", name:"The Hindu", url:"https://www.thehindu.com/news/international/feeder/default.rss", edition:"world"},
+  {id:"scmp", name:"SCMP World", url:"https://www.scmp.com/rss/5/feed", edition:"world"},
+  {id:"abc", name:"ABC (Australia)", url:"https://www.abc.net.au/news/feed/104217382/rss.xml", edition:"world"},
+  {id:"at", name:"Asia Times", url:"https://asiatimes.com/feed/", edition:"world"},
+  {id:"nikkei", name:"Nikkei Asia", url:"https://asia.nikkei.com/rss/feed/nar", edition:"world"},
+  {id:"nyt-ap", name:"NYT Asia Pacific", url:"https://rss.nytimes.com/services/xml/rss/nyt/AsiaPacific.xml", edition:"world"},
+  {id:"cnbc-eu", name:"CNBC Europe", url:"https://www.cnbc.com/id/19794221/device/rss/rss.html", edition:"world"},
+  {id:"cnbc-ap", name:"CNBC Asia-Pacific", url:"https://www.cnbc.com/id/19832390/device/rss/rss.html", edition:"world"},
+  {id:"euronews", name:"Euronews", url:"https://www.euronews.com/rss", edition:"world"},
+  {id:"rfi", name:"RFI", url:"https://www.rfi.fr/en/international/rss", edition:"world"},
+  {id:"upi", name:"UPI World", url:"https://rss.upi.com/news/tn_int.rss", edition:"world"},
+  {id:"ft", name:"Financial Times", url:"https://www.ft.com/world?format=rss", edition:"world"},
+  {id:"lemonde", name:"Le Monde", url:"https://www.lemonde.fr/en/international/rss_full.xml", edition:"world"},
+  {id:"euobs", name:"EUobserver", url:"https://euobserver.com/feed/", edition:"world"},
+  {id:"birn", name:"Balkan Insight", url:"https://balkaninsight.com/feed/", edition:"world"},
+  {id:"globe", name:"Globe and Mail", url:"https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/", edition:"world"},
+  {id:"global", name:"Global News", url:"https://globalnews.ca/world/feed/", edition:"world"},
+  {id:"smh", name:"Sydney Morning Herald", url:"https://www.smh.com.au/rss/world.xml", edition:"world"},
+  {id:"sbs", name:"SBS News", url:"https://www.sbs.com.au/news/topic/world/feed", edition:"world"},
+  {id:"jt", name:"Japan Times", url:"https://www.japantimes.co.jp/feed/", edition:"world"},
+  {id:"mandala", name:"New Mandala", url:"https://www.newmandala.org/feed/", edition:"world"},
+  {id:"sentinel", name:"Asia Sentinel", url:"https://www.asiasentinel.com/feed", edition:"world"},
+  {id:"toi", name:"Times of India", url:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms", edition:"world"},
+  {id:"ndtv", name:"NDTV World", url:"https://feeds.feedburner.com/ndtvnews-world-news", edition:"world"},
+  {id:"print", name:"ThePrint", url:"https://theprint.in/category/world/feed/", edition:"world"},
+  {id:"merco", name:"MercoPress", url:"https://en.mercopress.com/rss/", edition:"world"},
+  {id:"maverick", name:"Daily Maverick", url:"https://www.dailymaverick.co.za/rss", edition:"world"},
+  {id:"fa", name:"Foreign Affairs", url:"https://www.foreignaffairs.com/rss.xml", edition:"world"},
+  {id:"icg", name:"Crisis Group", url:"https://www.crisisgroup.org/rss", edition:"world"},
+  {id:"wpr", name:"World Politics Review", url:"https://www.worldpoliticsreview.com/feed/", edition:"world"},
+  {id:"ni", name:"National Interest", url:"https://nationalinterest.org/feed", edition:"world"},
+  {id:"lwj", name:"Long War Journal", url:"https://www.longwarjournal.org/feed", edition:"world"},
+  {id:"cipher", name:"The Cipher Brief", url:"https://www.thecipherbrief.com/feeds/feed.rss", edition:"world"},
+  {id:"bd", name:"Breaking Defense", url:"https://breakingdefense.com/feed/", edition:"world"},
+  {id:"twz", name:"The War Zone", url:"https://www.twz.com/feed", edition:"world"},
+  {id:"naval", name:"Naval News", url:"https://www.navalnews.com/feed/", edition:"world"},
+  {id:"in-hindu", name:"The Hindu", url:"https://www.thehindu.com/news/national/feeder/default.rss", edition:"india"},
+  {id:"in-ie", name:"Indian Express", url:"https://indianexpress.com/section/india/feed/", edition:"india"},
+  {id:"in-ht", name:"Hindustan Times", url:"https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml", edition:"india"},
+  {id:"in-toi", name:"Times of India", url:"https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms", edition:"india"},
+  {id:"in-ndtv", name:"NDTV", url:"https://feeds.feedburner.com/ndtvnews-india-news", edition:"india"},
+  {id:"in-it", name:"India Today", url:"https://www.indiatoday.in/rss/1206578", edition:"india"},
+  {id:"in-print", name:"ThePrint", url:"https://theprint.in/category/india/feed/", edition:"india"},
+  {id:"in-scroll", name:"Scroll", url:"https://feeds.feedburner.com/ScrollinArticles.rss", edition:"india"},
+  {id:"in-wire", name:"The Wire", url:"https://thewire.in/rss", edition:"india"},
+  {id:"in-mint", name:"Mint", url:"https://www.livemint.com/rss/politics", edition:"india"},
+  {id:"in-bs", name:"Business Standard", url:"https://www.business-standard.com/rss/latest.rss", edition:"india"},
+  {id:"in-frontline", name:"Frontline", url:"https://frontline.thehindu.com/feeder/default.rss", edition:"india"},
+  {id:"in-reuters", name:"Reuters India", url:"https://news.google.com/rss/search?q=when:24h+site:reuters.com/world/india&ceid=IN:en&hl=en-IN&gl=IN", edition:"india"}
 ];
 
 /* CORS proxies, tried in order. The one that works for a feed is remembered. */
@@ -313,11 +341,19 @@ const REGIONS = [
   ["Africa", /\b(africa\w*|sudan\w*|khartoum|darfur|ethiopia\w*|eritrea|somalia\w*|kenya\w*|nairobi|nigeria\w*|abuja|sahel|mali\b|niger\b|burkina|chad|congo\w*|drc\b|kinshasa|rwanda\w*|uganda\w*|tanzania\w*|mozambique|zimbabwe|south africa\w*|pretoria|libya\w*|tripoli|tunisia\w*|algeria\w*|morocc\w*|senegal|ghana\w*|cameroon|angola)\b/i],
   ["Americas", /\b(united states|u\.s\.|\bus\b|america\w*|washington|white house|trump|pentagon|congress|senate|canada|canadian|ottawa|mexic\w*|brazil\w*|lula|argentin\w*|milei|venezuel\w*|maduro|colombia\w*|peru\w*|chile\w*|cuba\w*|haiti\w*|ecuador\w*|bolivia\w*|panama|nicaragua\w*|guatemala\w*|latin america)\b/i]
 ];
+const REGIONS_IN = [
+  ["North", /\b(delhi|punjab\w*|haryana|himachal|uttarakhand|uttar pradesh|lucknow|noida|gurugram|chandigarh|jammu|kashmir\w*|srinagar|ladakh)\b/i],
+  ["South", /\b(kerala|thiruvananthapuram|kochi|tamil nadu|chennai|karnataka|bengaluru|bangalore|andhra|telangana|hyderabad|puducherry|lakshadweep)\b/i],
+  ["East & Northeast", /\b(west bengal|bengal|kolkata|bihar|patna|odisha|bhubaneswar|jharkhand|ranchi|assam|guwahati|manipur|imphal|meghalaya|nagaland|mizoram|tripura|arunachal|sikkim|andaman)\b/i],
+  ["West", /\b(maharashtra|mumbai|pune|nagpur|gujarat|ahmedabad|surat|goa|rajasthan|jaipur|daman|dadra)\b/i],
+  ["Central", /\b(madhya pradesh|bhopal|indore|chhattisgarh|raipur)\b/i]
+];
+const INDIA_RE = /\b(india|indian|indians|new delhi|modi|bjp|lok sabha|rajya sabha|rbi|mumbai|bengaluru|kolkata|chennai|hyderabad|kashmir)\b/i;
 const TOPICS = [
   ["Conflict", /\b(war|wars|strike[sd]?|airstrike\w*|missile\w*|drone\w*|troops|military|offensive|ceasefire|truce|shelling|attack\w*|killed|militant\w*|insurgen\w*|invasion|army|bomb\w*|clashes|hostage\w*)\b/i],
   ["Diplomacy", /\b(talks|summit|diplomat\w*|minister\w*|envoy|negotiat\w*|treaty|accord|peace deal|peace plan|bilateral|visit\w*|meets|ambassador\w*|g7|g20|un security council|united nations)\b/i],
-  ["Trade & sanctions", /\b(sanction\w*|tariff\w*|trade|export\w*|import\w*|embargo|oil|gas|lng|opec|economy|economic|supply chain|chips?|semiconductor\w*|rare earth\w*)\b/i],
-  ["Elections & politics", /\b(election\w*|vote[sd]?|voting|ballot|poll\w*|referendum|parliament\w*|coalition|president\w*|prime minister|coup|protest\w*|opposition|impeach\w*|resign\w*)\b/i],
+  ["Trade & sanctions", /\b(sanction\w*|tariff\w*|trade|export\w*|import\w*|embargo|oil|gas|lng|opec|economy|economic|rbi|repo rate|gdp|inflation|budget|rupee|sensex|nifty|supply chain|chips?|semiconductor\w*|rare earth\w*)\b/i],
+  ["Elections & politics", /\b(election\w*|vote[sd]?|voting|ballot|poll\w*|referendum|parliament\w*|lok sabha|rajya sabha|bjp|congress party|assembly polls?|chief minister|cabinet|coalition|president\w*|prime minister|coup|protest\w*|opposition|impeach\w*|resign\w*)\b/i],
   ["Nuclear & security", /\b(nuclear|uranium|enrich\w*|iaea|warhead\w*|deterren\w*|cyber\w*|espionage|spy|spies|intelligence|terror\w*|defen[cs]e spending|arms)\b/i],
   ["Humanitarian", /\b(refugee\w*|migrant\w*|migration|humanitarian|famine|aid\b|displaced|asylum|human rights|genocide|war crimes?|icc|icj)\b/i]
 ];
@@ -333,7 +369,8 @@ const state = {
   health: {},            // id -> {status, ms, count, err}
   proxyFor: LS.get("proxyFor", {}),
   disabled: new Set(LS.get("disabled", [])),
-  region: LS.get("region", "All"),
+  edition: LS.get("edition", "world"),
+  region: "All",
   topic: LS.get("topic", "All"),
   q: "",
   shown: 80,
@@ -425,7 +462,8 @@ function makeStory(feed, title, link, date, desc){
   return {
     feed: feed.id, src: feed.name, title, link: (link || "").trim(), summary,
     ts: isNaN(t) ? 0 : Math.min(t, Date.now()),
-    regions: tagWith(REGIONS, hay), topics: tagWith(TOPICS, hay),
+    regions: tagWith(REGIONS, hay), inRegions: tagWith(REGIONS_IN, hay), topics: tagWith(TOPICS, hay),
+    edition: feed.edition || "world", aboutIndia: INDIA_RE.test(hay),
     key: normKey(title)
   };
 }
@@ -468,7 +506,7 @@ async function loadSnapshot(){
   if (Array.isArray(j.feeds) && j.feeds.length){
     FEEDS.length = 0;
     for (const f of j.feeds){
-      FEEDS.push({id:f.id, name:f.name, url:f.url});
+      FEEDS.push({id:f.id, name:f.name, url:f.url, edition:f.edition || "world"});
       state.health[f.id] = {status:f.status, ms:f.ms, count:f.count, err:f.err};
     }
   }
@@ -563,7 +601,7 @@ function mergeStories(a, b){
   // group near-identical headlines across outlets
   const groups = new Map();
   for (const s of byLink.values()){
-    const k = s.key || s.link;
+    const k = (s.edition || "world") + "|" + (s.key || s.link);
     const g = groups.get(k);
     if (!g) groups.set(k, {...s, also: []});
     else if (g.src !== s.src && !g.also.includes(s.src)){ g.also.push(s.src); g.ts = Math.max(g.ts, s.ts); }
@@ -574,11 +612,20 @@ function mergeStories(a, b){
 /* ---------- Rendering ---------- */
 function setLive(text, on){ $("liveText").textContent = text; $("liveState").classList.toggle("on", !!on); }
 
+const curRegions = () => state.edition === "india" ? REGIONS_IN : REGIONS;
+const regionsOf = s => state.edition === "india" ? s.inRegions : s.regions;
+/* World tab: world outlets. India tab: Indian national outlets, plus world-outlet stories about India. */
+function editionBase(ed = state.edition){
+  const on = state.stories.filter(s => !state.disabled.has(s.feed));
+  if (ed === "world") return on.filter(s => s.edition === "world");
+  const own = on.filter(s => s.edition === "india");
+  const keys = new Set(own.map(s => s.key));
+  return [...own, ...on.filter(s => s.edition === "world" && s.aboutIndia && !keys.has(s.key))].sort((a, b) => b.ts - a.ts);
+}
 function visibleStories(){
   const q = state.q.trim().toLowerCase();
-  return state.stories.filter(s =>
-    !state.disabled.has(s.feed) &&
-    (state.region === "All" || s.regions.includes(state.region)) &&
+  return editionBase().filter(s =>
+    (state.region === "All" || regionsOf(s).includes(state.region)) &&
     (state.topic === "All" || s.topics.includes(state.topic)) &&
     (!q || (s.title + " " + s.summary + " " + s.src).toLowerCase().includes(q))
   );
@@ -605,7 +652,12 @@ function ago(ts){
 
 function render(){
   const now = Date.now();
-  const base = state.stories.filter(s => !state.disabled.has(s.feed));
+  const base = editionBase();
+  for (const ed of ["world", "india"]){
+    $("cnt-" + ed).textContent = editionBase(ed).filter(s => now - s.ts < 864e5).length || "";
+    const t = $("tab-" + ed); t.setAttribute("aria-selected", state.edition === ed); t.tabIndex = state.edition === ed ? 0 : -1;
+  }
+  $("q").placeholder = state.edition === "india" ? "Search India headlines: Lok Sabha, RBI, Kerala, Kashmir…" : "Search headlines: Ukraine, NATO, tariffs, Taiwan…";
   $("sTotal").textContent = base.length;
   $("s60").textContent = base.filter(s => now - s.ts < 36e5).length;
   $("s24").textContent = base.filter(s => now - s.ts < 864e5).length;
@@ -622,7 +674,7 @@ function render(){
   const list = visibleStories();
   const feed = $("feed");
   if (!list.length){
-    feed.innerHTML = `<div class="empty">${state.loading ? "Loading headlines from public RSS feeds…" : base.length ? "No stories match these filters. Try another region, topic or search term." : "No feeds could be reached. Check your connection and press Refresh."}</div>`;
+    feed.innerHTML = `<div class="empty">${state.loading ? "Loading headlines from public RSS feeds…" : base.length ? "No stories match these filters. Try another region, topic or search term." : state.edition === "india" && state.stories.length ? "No India stories loaded yet. They appear after the next update." : "No feeds could be reached. Check your connection and press Refresh."}</div>`;
     return;
   }
   let html = "", lastDay = "";
@@ -638,7 +690,7 @@ function render(){
         <div class="meta">
           ${fresh ? `<span class="new">New</span>` : ""}
           <span class="src">${esc(s.src)}</span>
-          ${s.regions.slice(0, 2).map(r => `<span class="tag">${esc(r)}</span>`).join("")}
+          ${regionsOf(s).slice(0, 2).map(r => `<span class="tag">${esc(r)}</span>`).join("")}
           ${s.topics.slice(0, 2).map(t => `<span class="tag topic">${esc(t)}</span>`).join("")}
           ${s.also.length ? `<span class="also">also ${esc(s.also.join(", "))}</span>` : ""}
         </div>
@@ -653,29 +705,33 @@ function render(){
 function renderChips(base){
   const mk = (el, rules, key) => {
     const counts = Object.fromEntries(rules.map(([n]) => [n, 0]));
-    for (const s of base) for (const n of s[key === "region" ? "regions" : "topics"]) counts[n]++;
+    for (const s of base) for (const n of (key === "region" ? regionsOf(s) : s.topics)) if (n in counts) counts[n]++;
     const names = ["All", ...rules.map(([n]) => n)];
-    el.innerHTML = names.map(n => `<button type="button" class="chip" data-v="${esc(n)}" aria-pressed="${state[key] === n}">${esc(n === "All" ? (key === "region" ? "All regions" : "All topics") : n)}${n === "All" ? "" : `<small>${counts[n]}</small>`}</button>`).join("");
+    el.innerHTML = names.map(n => `<button type="button" class="chip" data-v="${esc(n)}" aria-pressed="${state[key] === n}">${esc(n === "All" ? (key === "region" ? (state.edition === "india" ? "All India" : "All regions") : "All topics") : n)}${n === "All" ? "" : `<small>${counts[n]}</small>`}</button>`).join("");
   };
-  mk($("regionChips"), REGIONS, "region");
+  mk($("regionChips"), curRegions(), "region");
   mk($("topicChips"), TOPICS, "topic");
 }
 
 function renderBars(base, now){
   const day = base.filter(s => now - s.ts < 864e5);
-  const rows = REGIONS.map(([n]) => [n, day.filter(s => s.regions.includes(n)).length]).sort((a, b) => b[1] - a[1]);
+  const rows = curRegions().map(([n]) => [n, day.filter(s => regionsOf(s).includes(n)).length]).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...rows.map(r => r[1]));
   $("bars").innerHTML = rows.map(([n, c]) => `<button type="button" class="bar" data-v="${esc(n)}" title="Show ${esc(n)} stories"><span>${esc(n)}</span><i style="--w:${(c / max * 100).toFixed(1)}%"></i><b>${c}</b></button>`).join("");
 }
 
 function renderOutlets(){
-  $("outlets").innerHTML = FEEDS.map(f => {
+  const row = f => {
     const h = state.health[f.id];
     const off = state.disabled.has(f.id);
     const cls = off ? "" : h ? h.status : "";
     const info = off ? "off" : !h ? "…" : h.status === "fail" ? "down" : `${h.count} · ${(h.ms / 1000).toFixed(1)}s`;
     const title = h && h.err ? ` title="${esc(h.err)}"` : "";
     return `<label class="outlet"${title}><input type="checkbox" data-id="${f.id}" ${off ? "" : "checked"}><span style="display:flex;align-items:center;gap:8px;min-width:0"><span class="health ${cls}"></span>${esc(f.name)}</span><small>${info}</small></label>`;
+  };
+  $("outlets").innerHTML = [["world", "World outlets"], ["india", "India outlets"]].map(([ed, label]) => {
+    const fs = FEEDS.filter(f => (f.edition || "world") === ed);
+    return fs.length ? `<div class="outlet-group">${label} · ${fs.length}</div>` + fs.map(row).join("") : "";
   }).join("");
 }
 
@@ -698,10 +754,22 @@ function tick(){
 
 /* ---------- Events ---------- */
 $("refreshBtn").onclick = loadAll;
+function setEdition(ed){
+  if (state.edition === ed) return;
+  state.edition = ed; LS.set("edition", ed);
+  state.region = "All"; state.shown = 80;
+  render();
+}
+document.querySelector(".tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (t) setEdition(t.dataset.ed); });
+document.querySelector(".tabs").addEventListener("keydown", e => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = state.edition === "world" ? "india" : "world";
+  setEdition(next); $("tab-" + next).focus();
+});
 $("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 80; render(); });
-$("regionChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); state.shown = 80; render(); });
+$("regionChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.region = b.dataset.v; state.shown = 80; render(); });
 $("topicChips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; state.topic = b.dataset.v; LS.set("topic", state.topic); state.shown = 80; render(); });
-$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); render(); closeDrawer(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
+$("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; render(); closeDrawer(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
 $("outlets").addEventListener("change", e => {
   const id = e.target.dataset.id; if (!id) return;
   if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); if (!state.snap) loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }

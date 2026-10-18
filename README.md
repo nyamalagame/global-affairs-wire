@@ -1,6 +1,6 @@
 # Global Affairs Wire
 
-Live world geopolitics headlines from 52 international outlets, tagged by region and topic.
+World and India news from 65 outlets, in separate World and India tabs, tagged by region and topic.
 
 Live site: https://nyamalagame.github.io/global-affairs-wire/
 
@@ -12,5 +12,5 @@ The strip under the topic filters shows front-month futures for gold, silver, pl
 
 A GitHub Actions workflow (`.github/workflows/feeds.yml`) runs every 15 minutes. It fetches every feed in `feeds.config.json`, keeps the last 72 hours of stories, writes `data/feeds.json`, and redeploys the site. The page reads that snapshot; if it's missing, the page falls back to fetching the feeds through free CORS proxies.
 
-- **Add or remove an outlet:** edit `feeds.config.json`.
+- **Add or remove an outlet:** edit `feeds.config.json`. Set `"edition": "india"` to put an outlet under the India tab.
 - **Refresh now:** Actions → "Refresh feeds and deploy" → Run workflow.
