@@ -5,7 +5,7 @@
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 
 const KEEP_HOURS = 72;      // how long a story stays in the snapshot
-const MAX_ITEMS = 1500;     // hard cap on snapshot size
+const MAX_ITEMS = 3000;     // hard cap on snapshot size
 const TIMEOUT_MS = 20000;
 const SITE_URL = process.env.SITE_URL || "";
 
@@ -107,3 +107,10 @@ await writeFile("_site/.nojekyll", "");
 const live = results.filter(r => r.meta.status !== "fail").length;
 console.log(`Snapshot: ${items.length} stories, ${live}/${feeds.length} feeds live (${previous.length} carried from previous snapshot)`);
 for (const r of results) console.log(`  ${r.meta.status.padEnd(4)} ${r.meta.name.padEnd(18)} ${String(r.meta.count).padStart(3)} items  ${r.meta.ms} ms${r.meta.err ? "  " + r.meta.err : ""}`);
+
+// Surface results as run annotations (visible in the Actions run summary).
+if (process.env.GITHUB_ACTIONS) {
+  const failed = results.filter(r => r.meta.status === "fail").map(r => `${r.meta.name}: ${r.meta.err}`);
+  const esc = t => t.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+  console.log(`::notice title=Feeds::${esc(`${live}/${feeds.length} feeds live, ${items.length} stories` + (failed.length ? `\nFailed:\n${failed.join("\n")}` : ""))}`);
+}
