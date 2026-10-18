@@ -33,7 +33,7 @@ function pick(block, ...tags) {
   return "";
 }
 
-export function parseFeed(xml, feedId) {
+export function parseFeed(xml, feedId, feedUrl = "") {
   const blocks = xml.match(/<(item|entry)[\s>][\s\S]*?<\/\1>/gi) || [];
   return blocks.map(b => {
     let link = clean(pick(b, "link"));
@@ -41,9 +41,13 @@ export function parseFeed(xml, feedId) {
       const alt = b.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i) || b.match(/<link[^>]*href=["']([^"']+)["']/i);
       link = alt ? decode(alt[1]) : clean(pick(b, "guid"));
     }
-    const title = clean(pick(b, "title"));
+    let title = clean(pick(b, "title"));
+    // Google News feeds append " - Publisher" to every headline; drop it.
+    if (/news\.google\.com/.test(feedUrl)) title = title.replace(/\s+-\s+[^-]+$/, "");
     let summary = clean(pick(b, "description", "summary", "content:encoded", "content"));
     if (summary.toLowerCase().startsWith(title.toLowerCase())) summary = summary.slice(title.length).trim();
+    // Google News descriptions only repeat the headline and source name.
+    if (/news\.google\.com/.test(feedUrl)) summary = "";
     if (summary.length > 240) summary = summary.slice(0, 237).replace(/\s+\S*$/, "") + "…";
     const t = Date.parse(clean(pick(b, "pubDate", "dc:date", "published", "updated", "date")));
     return { feed: feedId, title, link, summary, ts: Number.isFinite(t) ? Math.min(t, Date.now()) : 0 };
@@ -61,7 +65,7 @@ async function fetchFeed(f) {
       }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const items = parseFeed(await res.text(), f.id);
+    const items = parseFeed(await res.text(), f.id, f.url);
     if (!items.length) throw new Error("No stories found in feed");
     const ms = Date.now() - start;
     return { meta: { ...f, status: ms > 10000 ? "slow" : "ok", ms, count: items.length }, items };
