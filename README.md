@@ -1,6 +1,6 @@
 # Global Affairs Wire
 
-Live world geopolitics headlines from 18 international outlets, tagged by region and topic.
+Live world geopolitics headlines from 21 international outlets, tagged by region and topic.
 
 Live site: https://nyamalagame.github.io/global-affairs-wire/
 

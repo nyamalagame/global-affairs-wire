@@ -1,5 +1,7 @@
 [
   {"id": "reuters", "name": "Reuters", "url": "https://news.google.com/rss/search?q=when:24h+site:reuters.com/world&ceid=US:en&hl=en-US&gl=US"},
+  {"id": "ap", "name": "AP News", "url": "https://news.google.com/rss/search?q=when%3A24h%20site%3Aapnews.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US"},
+  {"id": "bbg", "name": "Bloomberg", "url": "https://news.google.com/rss/search?q=when%3A24h%20site%3Abloomberg.com%20%28war%20OR%20ceasefire%20OR%20diplomacy%20OR%20sanctions%20OR%20NATO%20OR%20election%20OR%20minister%20OR%20president%20OR%20military%20OR%20summit%20OR%20tariffs%29&ceid=US:en&hl=en-US&gl=US"},
   {"id": "bbc", "name": "BBC World", "url": "https://feeds.bbci.co.uk/news/world/rss.xml"},
   {"id": "aj", "name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
   {"id": "grd", "name": "The Guardian", "url": "https://www.theguardian.com/world/rss"},
