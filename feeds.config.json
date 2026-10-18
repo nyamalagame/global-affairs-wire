@@ -30,7 +30,6 @@
   {"id": "lemonde", "name": "Le Monde", "url": "https://www.lemonde.fr/en/international/rss_full.xml"},
   {"id": "euobs", "name": "EUobserver", "url": "https://euobserver.com/feed/"},
   {"id": "birn", "name": "Balkan Insight", "url": "https://balkaninsight.com/feed/"},
-  {"id": "cbc", "name": "CBC World", "url": "https://www.cbc.ca/webfeed/rss/rss-world"},
   {"id": "globe", "name": "Globe and Mail", "url": "https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/world/"},
   {"id": "global", "name": "Global News", "url": "https://globalnews.ca/world/feed/"},
   {"id": "smh", "name": "Sydney Morning Herald", "url": "https://www.smh.com.au/rss/world.xml"},
