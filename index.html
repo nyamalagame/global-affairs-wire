@@ -195,10 +195,10 @@ details.side-panel[open] summary::after{content:" −"}
           </div>
           <div>
             <h2>Auto-refresh</h2>
-            <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 10 minutes</label>
+            <label class="toggle"><input type="checkbox" id="autoRef" checked> Every 15 minutes</label>
             <p class="note" id="nextRef"></p>
           </div>
-          <p class="note">Headlines come from each publisher's public RSS feed, fetched through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
+          <p class="note">Headlines come from each publisher's public RSS feed. A GitHub Actions job collects them every 15 minutes; if that snapshot isn't available, the page fetches the feeds itself through free CORS proxies. Times are in your local time zone. Region and topic tags are assigned automatically from keywords, so treat them as a guide. Click a headline to read the full story on the publisher's site.</p>
         </div>
       </details>
     </aside>
@@ -280,7 +280,7 @@ const state = {
   lastLoad: 0,
   auto: LS.get("auto", true)
 };
-const REFRESH_MS = 10 * 60 * 1000;
+const REFRESH_MS = 15 * 60 * 1000;
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -398,11 +398,46 @@ async function loadFeed(feed){
   }
 }
 
+/* Snapshot built every 15 minutes by the GitHub Actions job (data/feeds.json, same site, no proxy) */
+async function loadSnapshot(){
+  const r = await fetch("data/feeds.json?t=" + Date.now(), {cache:"no-store"});
+  if (!r.ok) throw new Error("No snapshot");
+  const j = await r.json();
+  if (!Array.isArray(j.items) || !j.items.length) throw new Error("Empty snapshot");
+  if (Array.isArray(j.feeds) && j.feeds.length){
+    FEEDS.length = 0;
+    for (const f of j.feeds){
+      FEEDS.push({id:f.id, name:f.name, url:f.url});
+      state.health[f.id] = {status:f.status, ms:f.ms, count:f.count, err:f.err};
+    }
+  }
+  const byId = Object.fromEntries(FEEDS.map(f => [f.id, f]));
+  const stories = j.items.map(i => {
+    const s = makeStory(byId[i.feed] || {id:i.feed, name:i.feed}, i.title, i.link, "", i.summary);
+    s.ts = i.ts || 0;
+    return s;
+  });
+  state.stories = mergeStories(stories, []);
+  state.snapAt = Date.parse(j.generated) || Date.now();
+  state.snap = true;
+}
+
 async function loadAll(){
   if (state.loading) return;
   state.loading = true;
   $("refreshBtn").disabled = true;
   setLive("Updating", false);
+  try {
+    await loadSnapshot();
+    state.loading = false;
+    state.lastLoad = Date.now();
+    $("refreshBtn").disabled = false;
+    $("feedTotal").textContent = FEEDS.length;
+    const age = Math.round((Date.now() - state.snapAt) / 60000);
+    setLive(age > 45 ? `Snapshot ${age} min old` : `Live · updated ${fmtTime(state.snapAt)}`, age <= 45);
+    render();
+    return;
+  } catch { state.snap = false; /* no snapshot yet: fetch feeds directly through proxies */ }
   const active = FEEDS.filter(f => !state.disabled.has(f.id));
   const fresh = [];
   await Promise.all(active.map(f => loadFeed(f).then(items => {
@@ -567,7 +602,7 @@ $("topicChips").addEventListener("click", e => { const b = e.target.closest(".ch
 $("bars").addEventListener("click", e => { const b = e.target.closest(".bar"); if (!b) return; state.region = b.dataset.v; LS.set("region", state.region); render(); window.scrollTo({top: $("feed").offsetTop - 140, behavior: "smooth"}); });
 $("outlets").addEventListener("change", e => {
   const id = e.target.dataset.id; if (!id) return;
-  if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
+  if (e.target.checked){ state.disabled.delete(id); LS.set("disabled", [...state.disabled]); const f = FEEDS.find(x => x.id === id); if (!state.snap) loadFeed(f).then(items => { state.stories = mergeStories(items, state.stories.filter(s => s.feed !== id)); render(); }); }
   else { state.disabled.add(id); LS.set("disabled", [...state.disabled]); }
   render();
 });

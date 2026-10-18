@@ -1,0 +1,20 @@
+[
+  {"id": "bbc",   "name": "BBC World",        "url": "https://feeds.bbci.co.uk/news/world/rss.xml"},
+  {"id": "aj",    "name": "Al Jazeera",       "url": "https://www.aljazeera.com/xml/rss/all.xml"},
+  {"id": "grd",   "name": "The Guardian",     "url": "https://www.theguardian.com/world/rss"},
+  {"id": "nyt",   "name": "New York Times",   "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
+  {"id": "dw",    "name": "DW",               "url": "https://rss.dw.com/rdf/rss-en-top"},
+  {"id": "f24",   "name": "France 24",        "url": "https://www.france24.com/en/monde/rss"},
+  {"id": "npr",   "name": "NPR World",        "url": "https://feeds.npr.org/1004/rss.xml"},
+  {"id": "sky",   "name": "Sky News",         "url": "https://feeds.skynews.com/feeds/rss/world.xml"},
+  {"id": "cnbc",  "name": "CNBC World",       "url": "https://www.cnbc.com/id/100727362/device/rss/rss.html"},
+  {"id": "un",    "name": "UN News",          "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml"},
+  {"id": "fp",    "name": "Foreign Policy",   "url": "https://foreignpolicy.com/feed/"},
+  {"id": "dip",   "name": "The Diplomat",     "url": "https://thediplomat.com/feed/"},
+  {"id": "wotr",  "name": "War on the Rocks", "url": "https://warontherocks.com/feed/"},
+  {"id": "hindu", "name": "The Hindu",        "url": "https://www.thehindu.com/news/international/feeder/default.rss"},
+  {"id": "scmp",  "name": "SCMP World",       "url": "https://www.scmp.com/rss/5/feed"},
+  {"id": "abc",   "name": "ABC (Australia)",  "url": "https://www.abc.net.au/news/feed/104217382/rss.xml"},
+  {"id": "at",    "name": "Asia Times",       "url": "https://asiatimes.com/feed/"},
+  {"id": "eaf",   "name": "East Asia Forum",  "url": "https://eastasiaforum.org/feed/"}
+]
