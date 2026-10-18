@@ -6,7 +6,7 @@ Live site: https://nyamalagame.github.io/global-affairs-wire/
 
 ## Commodity prices
 
-The strip under the topic filters shows front-month futures for gold, silver, platinum, copper, Brent and WTI crude, natural gas, wheat, corn, soybeans and coffee, plus USD/INR (Yahoo Finance, with Stooq as fallback). India gold (24K, per 10 g) and silver (per kg) are derived from the international price × USD/INR + India's import duty (15% since May 2026), shown ex-GST. Update `INDIA_DUTY` in `scripts/fetch-markets.mjs` if the rate changes.
+The strip under the topic filters shows front-month futures for gold, silver, platinum, copper, Brent and WTI crude, natural gas, wheat, corn, soybeans and coffee, plus USD/INR (CNBC quotes, with Yahoo Finance as fallback; sparklines show the last 24 hours). India gold (24K, per 10 g) and silver (per kg) are derived from the international price × USD/INR + India's import duty (15% since May 2026), shown ex-GST. Update `INDIA_DUTY` in `scripts/fetch-markets.mjs` if the rate changes.
 
 ## How it updates
 
