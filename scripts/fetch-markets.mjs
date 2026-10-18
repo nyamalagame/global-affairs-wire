@@ -33,12 +33,15 @@ const INSTRUMENTS = [
 
 async function get(url, ms = 15000) {
   const res = await fetch(url, { signal: AbortSignal.timeout(ms), headers: { "User-Agent": UA, "Accept": "*/*" } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    const body = (await res.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 80);
+    throw new Error(`HTTP ${res.status}${body ? " " + body : ""}`);
+  }
   return res;
 }
 
-async function fromYahoo(sym) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1mo&interval=1d`;
+async function fromYahoo(sym, host = "query1") {
+  const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1mo&interval=1d`;
   const j = await (await get(url)).json();
   const r = j?.chart?.result?.[0];
   if (!r) throw new Error("No data");
@@ -66,10 +69,16 @@ async function fromStooq(sym) {
 }
 
 async function quote(inst) {
-  for (const [fn, sym] of [[fromYahoo, inst.yahoo], [fromStooq, inst.stooq]]) {
-    try { return { ...inst, ...(await fn(sym)), ok: true }; } catch (e) { inst.lastErr = String(e.message || e); }
+  const errs = [];
+  const tries = [
+    ["Yahoo q1", () => fromYahoo(inst.yahoo, "query1")],
+    ["Yahoo q2", () => fromYahoo(inst.yahoo, "query2")],
+    ["Stooq", () => fromStooq(inst.stooq)]
+  ];
+  for (const [name, fn] of tries) {
+    try { return { ...inst, ...(await fn()), ok: true }; } catch (e) { errs.push(`${name} ${e.message || e}`); }
   }
-  return { ...inst, ok: false, err: inst.lastErr };
+  return { ...inst, ok: false, err: errs.join("; ") };
 }
 
 async function previousMarkets() {
@@ -107,7 +116,7 @@ const indiaItems = [india("in-gold", "India gold 24K", "gold", 10, "INR/10 g"), 
 
 const order = ["gold", "in-gold", "silver", "in-silver", "brent", "wti", "natgas", "copper", "plat", "wheat", "corn", "soy", "coffee", "usdinr"];
 const all = [...items, ...indiaItems]
-  .map(({ yahoo, stooq, lastErr, ok, err, ...keep }) => keep)
+  .map(({ yahoo, stooq, ok, err, ...keep }) => keep)
   .sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 
 await mkdir("_site/data", { recursive: true });
